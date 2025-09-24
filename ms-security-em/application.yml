@@ -1,0 +1,46 @@
+# Configuracion del servidor web y puertos.
+server:
+  port: 8091
+  
+spring:
+  application:
+    name: ms-security-em
+  
+primaryDB:
+  datasource:
+    url: jdbc:postgresql://10.0.1.126:5432/embargos_clientes	
+    username: wilber.cuervo_des
+    password: W1lb3r25*
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    show-sql: true
+    hibernate: 
+      ddl-auto: update
+
+segundaryDB:
+  datasource:
+    url: jdbc:postgresql://10.0.1.126:5432/admin_usuarios_embargos  
+    username: wilber.cuervo_des
+    password: W1lb3r25*
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    show-sql: true
+    hibernate: 
+      ddl-auto: update
+
+logging:
+  level: 
+    org:
+      hibernate:
+        SQL: debug
+
+app:
+  security:
+    jwt:
+      key: 36ae60b771283a85653e7494d1686bc8bf6f593033151a24f79548bf04b018f7
+      user: wilbercl_em_backen
+      timerExpired: 30000 # 1800000 30 minutos en milisegundos

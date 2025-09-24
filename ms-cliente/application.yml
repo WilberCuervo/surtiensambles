@@ -1,0 +1,26 @@
+
+server:
+  port: 8083
+  
+spring:
+  application:
+    name: ms-clientes
+    
+primaryDB:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/clientes
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver  
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug

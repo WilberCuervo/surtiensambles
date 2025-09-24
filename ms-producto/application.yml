@@ -1,0 +1,26 @@
+
+server:
+  port: 8082
+  
+spring:
+  application:
+    name: ms-producto
+    
+primaryDB:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/productos
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver  
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+      
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug

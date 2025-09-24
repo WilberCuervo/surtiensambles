@@ -1,0 +1,35 @@
+package com.surtiensambles.producto.serviceImpl;
+
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.surtiensambes.commos.producto.dto.ProductoDTO;
+import com.surtiensambles.producto.dao.ProductoRepository;
+import com.surtiensambles.producto.entity.Producto;
+import com.surtiensambles.producto.service.ProductoMapper;
+import com.surtiensambles.producto.service.ProductoService;
+
+import lombok.RequiredArgsConstructor;
+@Service
+@RequiredArgsConstructor
+public class ProductoServiceImpl implements ProductoService {
+	
+	private ProductoRepository productoRepository;
+	
+	private final ProductoMapper productoMapper;
+
+	@Override
+	public ProductoDTO  createProducto(ProductoDTO  producto) {
+		Producto entity = productoMapper.toEntity(producto);
+        entity = productoRepository.save(entity);
+		return productoMapper.toDTO(entity);
+	}
+
+	@Override
+	public Optional<ProductoDTO > getProducto(Long id) {				
+		return productoRepository.findById(id)
+	            .map(productoMapper::toDTO);
+	}
+
+}

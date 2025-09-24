@@ -1,0 +1,31 @@
+server:
+  port: 8081
+  
+spring:
+  application:
+    name: ms-secutiry
+  security:
+    user: 
+      name: wilber
+      password: 12345
+      
+primaryDB:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/usuarios
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver  
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+
+app:
+  security:
+    jwt:
+      key: 36ae60b771283a85653e7494d1686bc8bf6f593033151a24f79548bf04b018f7
+      user: wilbercl_em_backen
+      timerExpired: 1800000 # 30 minutos en milisegundos
+    

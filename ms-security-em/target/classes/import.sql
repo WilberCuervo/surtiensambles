@@ -1,0 +1,9 @@
+INSERT INTO usuario (account_no_expired,account_no_loked,credential_no_expired,is_enabled,user_name,password,name) VALUES (true,true,true,true,'wilbercl_em','$2a$10$zgmb/wu8r6UOTxRBxq8vruYOoTGw9f9hZibqk9MVpu.JNc.e5FXKy','Administrador del Sistema');
+INSERT INTO usuario (account_no_expired,account_no_loked,credential_no_expired,is_enabled,user_name,password,name) VALUES (true,true,true,true,'donnath_em','$2a$10$zgmb/wu8r6UOTxRBxq8vruYOoTGw9f9hZibqk9MVpu.JNc.e5FXKy','Administrador del Sistema');
+INSERT INTO roles (id, role_name) VALUES (1, 'ADMIN');
+INSERT INTO roles (id, role_name) VALUES (2, 'DEVELOPER');
+INSERT INTO permission (id, name) VALUES (1, 'READ');
+INSERT INTO role_permission (role_id, permission_id) VALUES (1, 1);
+INSERT INTO role_permission (role_id, permission_id) VALUES (2, 1);
+INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);
+INSERT INTO user_roles (user_id, role_id) VALUES (2, 2);
