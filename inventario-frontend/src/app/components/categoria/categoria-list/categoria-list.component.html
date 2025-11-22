@@ -1,0 +1,83 @@
+<div class="page">
+
+  <div class="page-header">
+    <h2>Categorías</h2>
+
+    <div class="actions">
+      <!-- Buscar -->
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar</mat-label>
+        <input matInput [formControl]="searchControl" name="search" placeholder="Nombre categoría">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- Filtrar estado -->
+      <mat-form-field appearance="outline">
+        <mat-label>Estado</mat-label>
+        <mat-select [formControl]="statusFilterControl"> 
+          <mat-option [value]="null">Todos</mat-option>
+          <mat-option [value]="true">Activos</mat-option>
+          <mat-option [value]="false">Inactivos</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+       <button mat-stroked-button (click)="clearFilters()">Limpiar</button>
+      <button mat-raised-button color="primary" (click)="new()">Nueva</button>
+    </div>
+  </div>
+
+  <mat-table [dataSource]="categorias" class="mat-elevation-z2 bordered-table" *ngIf="!loading">
+
+    <ng-container matColumnDef="id">
+      <mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+      <mat-cell *matCellDef="let c">{{ c.id }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="nombre">
+      <mat-header-cell *matHeaderCellDef>Nombre</mat-header-cell>
+      <mat-cell *matCellDef="let c">{{ c.nombre }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="descripcion">
+      <mat-header-cell *matHeaderCellDef>Descripción</mat-header-cell>
+      <mat-cell *matCellDef="let c">{{ c.descripcion }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="estado">
+      <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+      <mat-cell *matCellDef="let c">
+        <span [class.active]="c.activo" [class.inactive]="!c.activo">
+          {{ c.activo ? "Activo" : "Inactivo" }}
+        </span>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="acciones">
+      <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
+      <mat-cell *matCellDef="let c">
+        <button mat-icon-button color="primary" (click)="edit(c.id)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="delete(c.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"/>
+    <mat-row *matRowDef="let row; columns: displayedColumns"/>
+  </mat-table>
+
+  <div *ngIf="loading" class="loading">Cargando…</div>
+  <div *ngIf="!loading && categorias.length === 0" class="empty">No hay resultados</div>
+
+  <!-- PAGINACIÓN -->
+  <mat-paginator
+    [length]="totalItems"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 25]"
+    (page)="onPageChange($event)"
+  ></mat-paginator>
+
+</div>

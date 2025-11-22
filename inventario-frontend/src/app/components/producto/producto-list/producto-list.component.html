@@ -1,0 +1,121 @@
+<div class="page">
+
+  <h2>Productos</h2>
+  <div class="page-header">
+
+    <div class="actions">
+
+      <!-- Buscar -->
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar productos</mat-label>
+        <input matInput [formControl]="searchControl" placeholder="Nombre o SKU">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- Filtrar categoría --> 
+      <mat-form-field appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-select [(ngModel)]="selectedCategoria" (selectionChange)="loadData()">
+          <mat-option [value]="null">Todas</mat-option>
+          <mat-option *ngFor="let c of categorias" [value]="c.id">{{ c.nombre }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Filtrar estado -->
+      <mat-form-field appearance="outline">
+        <mat-label>Estado</mat-label>
+        <mat-select [formControl]="statusFilterControl"> 
+          <mat-option [value]="null">Todos</mat-option>
+          <mat-option [value]="true">Activos</mat-option>
+          <mat-option [value]="false">Inactivos</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="clearFilters()">Limpiar</button>
+      <button mat-raised-button color="primary" (click)="new()">Nuevo</button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <mat-table [dataSource]="productos" class="mat-elevation-z2 bordered-table" *ngIf="!loading">
+
+    <ng-container matColumnDef="sku">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('sku')" class="sortable">
+        SKU
+      </mat-header-cell>
+      <mat-cell *matCellDef="let p">{{p.sku}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="nombre">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('nombre')" class="sortable">
+        Nombre
+      </mat-header-cell>
+      <mat-cell *matCellDef="let p">{{p.nombre}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="descripcion">
+      <mat-header-cell *matHeaderCellDef>Descripción</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{p.descripcion}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="categoria">
+      <mat-header-cell *matHeaderCellDef>Categoría</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{p.categoria?.nombre || 'Sin categoría'}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="unidad_medida">
+      <mat-header-cell *matHeaderCellDef>Unidad</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{p.unidad_medida}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="precio_referencia">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('precio_referencia')" class="sortable">
+        Precio
+      </mat-header-cell>
+      <mat-cell *matCellDef="let p">{{p.precio_referencia}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="nivel_reorden">
+      <mat-header-cell *matHeaderCellDef>Niv. Reorden</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{p.nivel_reorden}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="estado">
+      <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+      <mat-cell *matCellDef="let p">
+        <span [class.active]="p.estado" [class.inactive]="!p.estado">
+          {{ p.estado ? "Activo" : "Inactivo" }}
+        </span>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="acciones">
+      <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
+      <mat-cell *matCellDef="let p">
+        <button mat-icon-button color="primary" (click)="edit(p.id)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="delete(p.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+  </mat-table>
+
+  <div *ngIf="loading" class="loading">Cargando…</div>
+  <div *ngIf="!loading && productos.length === 0" class="empty">Sin resultados</div>
+
+  <!-- Paginación -->
+  <mat-paginator
+    [length]="totalItems"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 25, 50]"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+
+</div>

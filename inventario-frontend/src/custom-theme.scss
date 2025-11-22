@@ -1,0 +1,87 @@
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
+
+html .mat-mdc-table {
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Encabezado estilo Bootstrap claro */
+html .mat-mdc-header-row {
+  background-color: #f8f9fa !important;
+  border-bottom: 2px solid #dcdcdc !important;
+}
+
+/* Celdas con bordes tipo grid */
+html .mat-mdc-header-cell,
+html .mat-mdc-cell {
+  border-right: 1px solid #dcdcdc !important;
+  border-bottom: 1px solid #dcdcdc !important;
+  padding: 12px !important;
+  font-size: 14px;
+}
+
+/* Quitar borde extra en última columna */
+html .mat-mdc-header-cell:last-child,
+html .mat-mdc-cell:last-child {
+  border-right: none !important;
+}
+
+/* Hover estilo Bootstrap */
+html .mat-mdc-row:hover {
+  background-color: #f2f2f2 !important;
+  cursor: pointer;
+}
+
+/* Zebra rows */
+html .mat-mdc-row:nth-child(even) {
+  background-color: #fafafa !important;
+}
+
+/* Botón primary estilo Bootstrap */
+html .mat-mdc-raised-button.mat-primary {
+  background-color: #0d6efd !important;
+  color: white !important;
+  font-weight: 500;
+}
+
+/* Botón outline estilo bootstrap */
+html .mat-mdc-outlined-button {
+  border: 1px solid #0d6efd !important;
+  color: #0d6efd !important;
+  font-weight: 500;
+} 

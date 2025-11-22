@@ -1,0 +1,11 @@
+.sidenav-container {
+  height: 100vh;
+}
+
+.sidenav {
+  width: 240px;
+}
+
+.active {
+  background-color: rgba(0, 0, 0, 0.1);
+}

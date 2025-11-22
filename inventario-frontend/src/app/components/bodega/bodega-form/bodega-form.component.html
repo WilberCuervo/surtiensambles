@@ -1,0 +1,24 @@
+<div class="form-page">
+  <h2>{{ editingId ? 'Editar' : 'Nueva' }} Bodega</h2>
+  <form (ngSubmit)="submit()">
+    <mat-form-field appearance="fill" class="full">
+      <mat-label>Código</mat-label>
+      <input matInput name="codigo" [(ngModel)]="bodega.codigo" required/>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full">
+      <mat-label>Nombre</mat-label>
+      <input matInput name="nombre" [(ngModel)]="bodega.nombre" required/>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full">
+      <mat-label>Ubicación</mat-label>
+      <input matInput name="ubicacion" [(ngModel)]="bodega.ubicacion"/>
+    </mat-form-field>
+
+    <div class="buttons">
+      <button mat-raised-button color="primary" type="submit">Guardar</button>
+      <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    </div>
+  </form>
+</div>

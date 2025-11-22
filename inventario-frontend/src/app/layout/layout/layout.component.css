@@ -1,0 +1,18 @@
+.main-layout {
+  display: flex;
+  height: calc(100vh - 64px); 
+}
+
+
+app-sidebar {
+  width: 260px;   
+  flex-shrink: 0; 
+}
+
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center; 
+  padding: 32px;
+}

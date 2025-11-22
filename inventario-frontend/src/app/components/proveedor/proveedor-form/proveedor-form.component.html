@@ -1,0 +1,74 @@
+<div class="form-wrapper">
+
+  <mat-card class="card">
+    <mat-card-title>{{ proveedorId ? 'Editar proveedor' : 'Nuevo proveedor' }}</mat-card-title>
+
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="grid">
+
+        <!-- Nombre -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Nombre del proveedor</mat-label>
+          <input matInput formControlName="nombre">
+          <mat-error *ngIf="form.get('nombre')?.hasError('required')">
+            El nombre es obligatorio
+          </mat-error>
+        </mat-form-field>
+
+        <!-- NIT -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>NIT</mat-label>
+          <input matInput formControlName="nit">
+
+          <mat-icon *ngIf="loadingNit" matSuffix>hourglass_top</mat-icon>
+
+          <mat-error *ngIf="form.get('nit')?.hasError('required')">
+            El NIT es obligatorio
+          </mat-error>
+
+          <mat-error *ngIf="form.get('nit')?.hasError('nitDuplicado')">
+            Ya existe un proveedor con este NIT
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Teléfono -->
+        <mat-form-field appearance="outline">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="telefono">
+        </mat-form-field>
+
+        <!-- Email -->
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email">
+          <mat-error *ngIf="form.get('email')?.hasError('email')">
+            Formato de email no válido
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Dirección -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Dirección</mat-label>
+          <textarea matInput formControlName="direccion" rows="2"></textarea>
+        </mat-form-field>
+
+        <!-- Estado -->
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="estado">
+            <mat-option [value]="true">Activo</mat-option>
+            <mat-option [value]="false">Inactivo</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-raised-button color="primary" [disabled]="saving" (click)="submit()">Guardar</button>
+      <button mat-button (click)="cancelar()">Cancelar</button>
+    </mat-card-actions>
+
+  </mat-card>
+
+</div>

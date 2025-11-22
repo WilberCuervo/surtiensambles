@@ -1,0 +1,84 @@
+<div class="form-wrapper">
+
+  <mat-card class="form-card">
+    
+    <mat-card-title class="form-title">
+      {{ productoId ? 'Editar producto' : 'Crear nuevo producto' }}
+    </mat-card-title>
+
+    <mat-card-content>
+
+      <form (ngSubmit)="submit()" #f="ngForm">
+
+        <!-- SKU -->
+        <mat-form-field appearance="outline">
+          <mat-label>SKU</mat-label>
+          <input matInput name="sku" [(ngModel)]="producto.sku" required />
+        </mat-form-field>
+
+        <!-- Nombre -->
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput name="nombre" [(ngModel)]="producto.nombre" required />
+        </mat-form-field>
+
+        <!-- Descripción -->
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput name="descripcion" rows="3" [(ngModel)]="producto.descripcion"></textarea>
+        </mat-form-field>
+        
+        <!-- Categoría -->
+        <mat-form-field appearance="outline">
+          <mat-label>Categoría</mat-label>
+          <mat-select [(ngModel)]="producto.categoria" name="categoria" required>
+            <mat-option *ngFor="let c of categorias" [value]="c">
+              {{ c.nombre }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Unidad de medida -->
+        <mat-form-field appearance="outline">
+          <mat-label>Unidad de medida</mat-label>
+          <input matInput name="unidad_medida" [(ngModel)]="producto.unidad_medida" />
+        </mat-form-field>
+
+        <!-- Precio referencia -->
+        <mat-form-field appearance="outline">
+          <mat-label>Precio referencia</mat-label>
+          <input matInput type="number" name="precio_referencia" [(ngModel)]="producto.precio_referencia" min="0" />
+        </mat-form-field>
+
+        <!-- Nivel reorden -->
+        <mat-form-field appearance="outline">
+          <mat-label>Nivel de reorden</mat-label>
+          <input matInput type="number" name="nivel_reorden" [(ngModel)]="producto.nivel_reorden" min="0" />
+        </mat-form-field>
+
+        <!-- Estado -->
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="estado">
+            <mat-option [value]="true">Activo</mat-option>
+            <mat-option [value]="false">Inactivo</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </form>
+
+    </mat-card-content>
+
+    <mat-card-actions class="center-actions" class="buttons">
+      <button mat-raised-button color="primary" (click)="submit()" [disabled]="saving">
+        Guardar
+      </button>
+
+      <button mat-stroked-button color="warn" (click)="cancel()">
+        Cancelar
+      </button>
+    </mat-card-actions>
+
+  </mat-card>
+
+</div>

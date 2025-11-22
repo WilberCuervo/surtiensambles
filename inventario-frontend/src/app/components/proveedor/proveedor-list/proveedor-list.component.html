@@ -1,0 +1,91 @@
+<div class="page">
+
+  <h2>Proveedores</h2>
+
+  <div class="page-header">
+    <!-- Buscar -->
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar por nombre o NIT</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Ej. 900123456 o Juan Pérez">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <!-- Filtrar estado -->
+      <mat-form-field appearance="outline">
+        <mat-label>Estado</mat-label>
+        <mat-select [formControl]="statusFilterControl"> 
+          <mat-option [value]="null">Todos</mat-option>
+          <mat-option [value]="true">Activos</mat-option>
+          <mat-option [value]="false">Inactivos</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="clearFilters()">Limpiar</button>
+      <button mat-raised-button color="primary" (click)="new()">Nuevo</button>
+  </div>
+
+  <!-- Tabla -->
+  <mat-table [dataSource]="proveedores" class="mat-elevation-z2 bordered-table" *ngIf="!loading">
+
+    <ng-container matColumnDef="nombre">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('nombre')" class="sortable">Nombre</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{ p.nombre }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="nit">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('nit')" class="sortable">NIT</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{ p.nit }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="telefono">
+      <mat-header-cell *matHeaderCellDef>Teléfono</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{ p.telefono }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <mat-header-cell *matHeaderCellDef>Email</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{ p.email }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="direccion">
+      <mat-header-cell *matHeaderCellDef>Dirección</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{ p.direccion }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="estado">
+      <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+      <mat-cell *matCellDef="let p">
+        <span [class.active]="p.activo" [class.inactive]="!p.activo">
+          {{ p.activo ? "Activo" : "Inactivo" }}
+        </span>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="acciones">
+      <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
+      <mat-cell *matCellDef="let p">
+        <button mat-icon-button color="primary" (click)="edit(p.id)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="delete(p.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+  </mat-table>
+
+  <div *ngIf="loading" class="loading">Cargando…</div>
+
+  <mat-paginator
+    [length]="totalItems"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 25, 50]"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+
+</div>
