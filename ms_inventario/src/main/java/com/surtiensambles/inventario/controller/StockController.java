@@ -9,13 +9,26 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/stock")
 @RequiredArgsConstructor
 public class StockController {
 
-    private final StockService service;
+    private final StockService stockService;
+
+    /**
+     * Endpoint para obtener productos con stock bajo (críticos).
+     * Ruta: /api/stock/alertas
+     */
+    @GetMapping("/alertas")
+    public ResponseEntity<List<Stock>> getAlertasReabastecimiento(
+            @RequestParam(required = false) Long bodegaId
+    ) {
+        return ResponseEntity.ok(stockService.obtenerReporteReabastecimiento(bodegaId));
+    }
 
     /**
      * Endpoint principal para listado paginado y filtrado de stock.
@@ -35,16 +48,13 @@ public class StockController {
         requestDto.setSortBy(sortBy);
         requestDto.setSortDirection(sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC);
 
-        Page<Stock> pagina = service.listarPaginado(requestDto);
-        return ResponseEntity.ok(pagina);
+        return ResponseEntity.ok(stockService.listarPaginado(requestDto));
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<Stock> obtener(@PathVariable Long id) {
-        Stock stock = service.findById(id)
+        return stockService.findById(id)
+                .map(ResponseEntity::ok)
                 .orElseThrow(() -> new RuntimeException("Registro de stock no encontrado"));
-        return ResponseEntity.ok(stock);
     }
-    
-    // No hay métodos POST/PUT/DELETE aquí porque el stock se gestiona mediante Movimientos
 }

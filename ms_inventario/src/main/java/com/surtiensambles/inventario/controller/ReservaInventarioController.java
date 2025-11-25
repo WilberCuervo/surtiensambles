@@ -1,38 +1,49 @@
 package com.surtiensambles.inventario.controller;
 
+import com.surtiensambles.inventario.dto.ReservaRequestDto;
 import com.surtiensambles.inventario.entity.ReservaInventario;
-import com.surtiensambles.inventario.service.ReservaInventarioService;
+import com.surtiensambles.inventario.serviceImpl.ReservaInventarioServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/reservas")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class ReservaInventarioController {
 
-    private final ReservaInventarioService reservaService;
+    private final ReservaInventarioServiceImpl reservaService;
 
-    @PostMapping("/crear")
-    public ResponseEntity<ReservaInventario> crearReserva(@RequestBody ReservaInventario reserva) {
-        return ResponseEntity.ok(reservaService.crearReserva(reserva));
+    // Crear Reserva
+    @PostMapping
+    public ResponseEntity<ReservaInventario> crear(@RequestBody ReservaRequestDto dto) {
+        return ResponseEntity.status(201).body(reservaService.crearReserva(dto));
     }
 
-    @PostMapping("/consumir/{referencia}")
-    public ResponseEntity<ReservaInventario> consumirReserva(@PathVariable String referencia) {
-        return ResponseEntity.ok(reservaService.consumirReserva(referencia));
+    // Cancelar (Devolver al stock)
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelar(@PathVariable Long id) {
+        reservaService.cancelarReserva(id);
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/cancelar/{referencia}")
-    public ResponseEntity<ReservaInventario> cancelarReserva(@PathVariable String referencia) {
-        return ResponseEntity.ok(reservaService.cancelarReserva(referencia));
+    // Confirmar Venta (Sacar del inventario)
+    @PostMapping("/{id}/confirmar")
+    public ResponseEntity<Void> confirmar(@PathVariable Long id) {
+        reservaService.confirmarVentaReserva(id);
+        return ResponseEntity.ok().build();
     }
-
-    @GetMapping
-    public ResponseEntity<List<ReservaInventario>> listarReservas() {
-        return ResponseEntity.ok(reservaService.listarReservas());
+    
+    // Listar solo las reservas pendientes (ACTIVAS)
+    @GetMapping("/activas")
+    public ResponseEntity<List<ReservaInventario>> getReservasActivas(
+    		
+            @RequestParam(required = false) Long bodegaId // Parámetro opcional
+            
+    ) {
+        return ResponseEntity.ok(reservaService.listarReservasActivas(bodegaId));
     }
 }

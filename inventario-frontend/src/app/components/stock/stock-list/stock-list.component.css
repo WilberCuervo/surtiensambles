@@ -32,3 +32,44 @@
 .mat-column-cantidad_disponible, .mat-column-cantidad_reservada { max-width: 80px; text-align: center; }
 .mat-column-ultima_actualizacion { max-width: 160px; }
 
+/* Estilo base para el número de stock */
+.badge-stock {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  min-width: 40px;
+}
+
+/* ROJO: Stock Crítico (<= Nivel Reorden) */
+.stock-critical {
+  background-color: #ffebee; /* Fondo rojo muy claro */
+  color: #c62828;            /* Texto rojo oscuro */
+  border: 1px solid #ffcdd2; /* Borde rojo suave */
+  box-shadow: 0 2px 2px rgba(198, 40, 40, 0.1);
+}
+
+/* AMARILLO: Advertencia (Cerca de agotarse) */
+.stock-warning {
+  background-color: #fff8e1; /* Fondo amarillo muy claro */
+  color: #f57f17;            /* Texto naranja/ambar */
+  border: 1px solid #ffecb3;
+}
+
+/* VERDE: Stock Saludable */
+.stock-ok {
+  background-color: #e8f5e9; /* Fondo verde muy claro */
+  color: #2e7d32;            /* Texto verde bosque */
+  border: 1px solid #c8e6c9;
+}
+
+/* Forzar ancho a la columna específica 'cantidad_disponible' */
+.mat-column-cantidad_disponible {
+  flex: 0 0 140px !important; /* Dale espacio fijo (ajusta el número si necesitas más) */
+  min-width: 140px !important;
+  display: flex;       /* Para poder alinear verticalmente */
+  align-items: center; /* Centrar verticalmente badge y texto */
+}
+

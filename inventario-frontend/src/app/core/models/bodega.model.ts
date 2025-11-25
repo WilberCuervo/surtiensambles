@@ -4,5 +4,5 @@ export interface Bodega {
   nombre: string;
   ubicacion?: string | null;
   responsable?: string | null;
-  estado?: boolean;
+  activo?: boolean;
 }

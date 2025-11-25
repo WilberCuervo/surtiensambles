@@ -51,6 +51,34 @@ export class StockListComponent implements OnInit {
   private svc = inject(StockService);
   private router = inject(Router); 
 
+  /**
+     * Determina la clase CSS según el nivel de stock
+     */
+    getStockStatusClass(stock: any): string {
+      const cantidad = stock.cantidadDisponible;
+      // Si el nivelReorden es null o 0, asumimos 0 para evitar errores
+      const minimo = stock.producto.nivelReorden || 0; 
+      
+      // 1. ROJO: Crítico (Menor o igual al mínimo)
+      if (cantidad <= minimo) {
+        return 'stock-critical'; 
+      }
+      
+      // 2. AMARILLO: Advertencia (Cerca del mínimo, ej: hasta un 20% más)
+      // Ejemplo: Si el mínimo es 10, advertimos si tiene entre 11 y 12.
+      const margenAdvertencia = Math.ceil(minimo * 1.20); 
+      
+      // Si el mínimo es muy bajo (ej: 0), damos un margen fijo de 5 unidades
+      const umbralAlerta = (minimo === 0) ? 5 : margenAdvertencia;
+
+      if (cantidad <= umbralAlerta) {
+        return 'stock-warning';
+      }
+
+      // 3. VERDE: Bien
+      return 'stock-ok';
+    }
+
   ngOnInit(): void { 
     this.searchControl.valueChanges
       .pipe(debounceTime(400), distinctUntilChanged())
@@ -106,4 +134,6 @@ export class StockListComponent implements OnInit {
     this.pageIndex = 0;
     this.loadData();
   }
+
+
 }

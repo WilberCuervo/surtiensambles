@@ -30,13 +30,23 @@
       <mat-cell *matCellDef="let s">{{ s.bodega?.nombre }}</mat-cell>
     </ng-container>
 
+    <!-- COLUMNA MODIFICADA CON SEMÁFORO -->
     <ng-container matColumnDef="cantidad_disponible">
-      <mat-header-cell *matHeaderCellDef (click)="onSort('cantidadDisponible')" class="sortable">Disp.</mat-header-cell>
-      <mat-cell *matCellDef="let s">{{ s.cantidadDisponible }}</mat-cell>
+      <mat-header-cell *matHeaderCellDef (click)="onSort('cantidadDisponible')" class="sortable">Disponible</mat-header-cell>
+      <mat-cell *matCellDef="let s">
+        <!-- Badge con color dinámico -->
+        <span class="badge-stock" [ngClass]="getStockStatusClass(s)">
+          {{ s.cantidadDisponible }}
+        </span>
+        <!-- Referencia visual del mínimo -->
+        <span class="min-ref">
+          (Mín: {{ s.producto?.nivelReorden || 0 }})
+        </span>
+      </mat-cell>
     </ng-container>
     
     <ng-container matColumnDef="cantidad_reservada">
-      <mat-header-cell *matHeaderCellDef (click)="onSort('cantidadReservada')" class="sortable">Res.</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef (click)="onSort('cantidadReservada')" class="sortable">Reservado</mat-header-cell>
       <mat-cell *matCellDef="let s">{{ s.cantidadReservada }}</mat-cell>
     </ng-container>
     

@@ -23,13 +23,18 @@ export class BodegaService {
   constructor(private http: HttpClient) { }
 
   /**
-   * Búsqueda avanzada con paginación, filtros y sort usando un objeto de opciones.
-   * Llama al endpoint GET /api/bodegas
+   * Método Alias para compatibilidad con el módulo de Reservas
+   */
+  getAll(): Observable<Bodega[]> {
+    return this.getAllSimpleList(true);
+  }
+
+  /**
+   * Búsqueda avanzada con paginación...
    */
   list(params: BodegaSearchParams): Observable<any> {
     let httpParams = new HttpParams();
 
-    // Asignar valores por defecto si no se proporcionan
     httpParams = httpParams.set('page', params.page ?? 0);
     httpParams = httpParams.set('size', params.size ?? 10);
     httpParams = httpParams.set('search', params.search ?? '');
@@ -42,7 +47,6 @@ export class BodegaService {
 
     return this.http.get<any>(this.base, { params: httpParams });
   }
-  
 
   getAllSimpleList(activo?: boolean | null): Observable<Bodega[]> {
     let params = new HttpParams();

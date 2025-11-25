@@ -1,1 +1,68 @@
-<p>reserva-inventario-list works!</p>
+<div class="page">
+  <h2>Reservas Activas</h2>
+
+  <div class="page-header">
+    <div class="actions">
+      <mat-form-field appearance="outline">
+        <mat-label>Filtrar por Bodega</mat-label>
+        <mat-select [formControl]="bodegaFilterControl">
+          <mat-option [value]="null">Todas</mat-option>
+          <mat-option *ngFor="let b of bodegas" [value]="b.id">{{ b.nombre }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" (click)="new()">Nueva Reserva</button>
+    </div>
+  </div>
+
+  <mat-table [dataSource]="reservas" class="mat-elevation-z2 bordered-table">
+    
+    <ng-container matColumnDef="referencia">
+      <mat-header-cell *matHeaderCellDef> Ref. </mat-header-cell>
+      <mat-cell *matCellDef="let r"> <strong>{{ r.referenciaReserva }}</strong> </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="fecha">
+      <mat-header-cell *matHeaderCellDef> Fecha </mat-header-cell>
+      <mat-cell *matCellDef="let r"> {{ r.fechaReserva | date:'dd/MM HH:mm' }} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="producto">
+      <mat-header-cell *matHeaderCellDef> Producto </mat-header-cell>
+      <mat-cell *matCellDef="let r"> {{ r.producto.nombre }} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="bodega">
+      <mat-header-cell *matHeaderCellDef> Bodega </mat-header-cell>
+      <mat-cell *matCellDef="let r"> {{ r.bodega.nombre }} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="cantidad">
+      <mat-header-cell *matHeaderCellDef> Cant. </mat-header-cell>
+      <mat-cell *matCellDef="let r" class="text-bold"> {{ r.cantidad }} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="nota">
+      <mat-header-cell *matHeaderCellDef> Cliente / Nota </mat-header-cell>
+      <mat-cell *matCellDef="let r"> {{ r.nota || '---' }} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="acciones">
+      <mat-header-cell *matHeaderCellDef> Gestionar </mat-header-cell>
+      <mat-cell *matCellDef="let r">
+        <button mat-icon-button color="primary" (click)="confirmar(r)" matTooltip="Confirmar Venta">
+          <mat-icon>check_circle</mat-icon>
+        </button>
+
+        <button mat-icon-button color="warn" (click)="cancelar(r)" matTooltip="Cancelar Reserva">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
+
+  <div *ngIf="reservas.length === 0" class="empty">No hay reservas activas.</div>
+</div>

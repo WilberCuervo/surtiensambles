@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 
 import { MovimientoInventarioService } from '../../../core/services/movimiento-inventario.service';
 import { ProductoService } from '../../../core/services/producto.service';
-// import { BodegaService } from '../../services/bodega.service'; // Asegúrate de tener este
+import { BodegaService } from '../../../core/services/bodega.service';
 
 // Modelos
 import { Producto } from '../../../core/models/producto.model';
@@ -40,7 +40,7 @@ export class MovimientoInventarioFormComponent implements OnInit {
   private router = inject(Router);
   private movimientoSvc = inject(MovimientoInventarioService);
   private productoSvc = inject(ProductoService);
-  // private bodegaSvc = inject(BodegaService); // Inyéctalo cuando lo tengas
+  private bodegaSvc = inject(BodegaService);
 
   ngOnInit(): void {
     this.initForm();
@@ -70,21 +70,21 @@ export class MovimientoInventarioFormComponent implements OnInit {
 
   loadCatalogos() {
     // 1. Cargar Productos
-    this.productoSvc.list({page:0, size: 100}).subscribe(res => {
-        // Ojo: Aquí cargo los primeros 100. En prod deberías usar autocomplete.
+    this.productoSvc.list({page: 0, size: 100}).subscribe({
+      next: (res) => {
         this.productos = res.content;
+      },
+      error: (err) => console.error('Error cargando productos', err)
     });
 
-    // 2. Cargar Bodegas (Simulado si no tienes el servicio aún)
-    // this.bodegaSvc.getAll().subscribe(b => this.bodegas = b);
-    
-    // MOCK TEMPORAL PARA QUE PRUEBES EL FRONT SI NO TIENES BODEGA SERVICE
-    this.bodegas = [
-      { id: 1, nombre: 'Bodega Central', codigo: 'B01', ubicacion: 'Centro', responsable: 'Juan' },
-      { id: 2, nombre: 'Bodega Norte', codigo: 'B02', ubicacion: 'Norte', responsable: 'Ana' }
-    ] as any;
+    // 2. Cargar Bodegas
+    this.bodegaSvc.getAll().subscribe({
+      next: (data) => {
+        this.bodegas = data;
+      },
+      error: (err) => console.error('Error cargando bodegas', err)
+    });
   }
-
   /**
    * Lógica reactiva: Cuando cambia el tipo, ajustamos los validadores
    */

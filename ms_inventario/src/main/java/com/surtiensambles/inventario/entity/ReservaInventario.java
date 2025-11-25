@@ -1,7 +1,9 @@
 package com.surtiensambles.inventario.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
@@ -9,7 +11,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ReservaInventario {
 
     @Id
@@ -27,15 +28,21 @@ public class ReservaInventario {
     @Column(nullable = false)
     private Integer cantidad;
 
-    @Column(name = "referencia_reserva", unique = true, nullable = false, length = 100)
+    // Código único para reclamar la reserva (Ej: "RES-9090")
+    @Column(name = "referencia_reserva", unique = true, nullable = false)
     private String referenciaReserva;
 
-    @Column(name = "fecha_reserva", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fechaReserva;
+    @Column(name = "fecha_reserva")
+    private LocalDateTime fechaReserva = LocalDateTime.now();
 
+    //Cuándo se vence la reserva. Si pasa esta fecha, el sistema debería liberar el stock.
     @Column(name = "fecha_expiracion")
     private LocalDateTime fechaExpiracion;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String estado; // ACTIVA, CONSUMIDA, EXPIRADA, CANCELADA
+    private EstadoReserva estado; // ACTIVA, CONSUMIDA, EXPIRADA, CANCELADA
+
+    private String usuario;
+    private String nota;
 }

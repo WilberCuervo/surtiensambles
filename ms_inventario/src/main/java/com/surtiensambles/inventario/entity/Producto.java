@@ -30,7 +30,7 @@ public class Producto {
     private Double precio_referencia;
 
     @Column(name = "nivel_reorden")
-    private Integer nivel_reorden = 0;
+    private Integer nivelReorden;
 
     @Column(name = "activo")
     private Boolean activo = true;

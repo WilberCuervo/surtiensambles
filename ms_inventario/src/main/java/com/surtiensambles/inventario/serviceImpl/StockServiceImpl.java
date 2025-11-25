@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.persistence.criteria.Join;
@@ -125,5 +126,62 @@ public class StockServiceImpl implements StockService {
             throw new RuntimeException("Stock insuficiente. Disponible: " 
                     + stock.getCantidadDisponible() + ", Requerido: " + cantidadRequerida);
         }
+    }
+    
+    @Override
+    @Transactional
+    public void reservarStock(Long productoId, Long bodegaId, Integer cantidad) {
+        Stock stock = stockRepository.findByProductoIdAndBodegaId(productoId, bodegaId)
+                .orElseThrow(() -> new RuntimeException("No existe registro de stock para reservar"));
+
+        if (stock.getCantidadDisponible() < cantidad) {
+            throw new RuntimeException("Stock insuficiente para reservar. Disponible: " + stock.getCantidadDisponible());
+        }
+
+        // Mueve de Disponible -> Reservado
+        stock.setCantidadDisponible(stock.getCantidadDisponible() - cantidad);
+        stock.setCantidadReservada(stock.getCantidadReservada() + cantidad);
+        stock.setUltimaActualizacion(LocalDateTime.now());
+        
+        stockRepository.save(stock);
+    }
+
+    @Override
+    @Transactional
+    public void liberarReserva(Long productoId, Long bodegaId, Integer cantidad) {
+        Stock stock = stockRepository.findByProductoIdAndBodegaId(productoId, bodegaId)
+                .orElseThrow(() -> new RuntimeException("Stock no encontrado"));
+
+        // Mueve de Reservado -> Disponible (El cliente canceló)
+        stock.setCantidadReservada(stock.getCantidadReservada() - cantidad);
+        stock.setCantidadDisponible(stock.getCantidadDisponible() + cantidad);
+        stock.setUltimaActualizacion(LocalDateTime.now());
+
+        stockRepository.save(stock);
+    }
+
+    @Override
+    @Transactional
+    public void descontarDeReserva(Long productoId, Long bodegaId, Integer cantidad) {
+        Stock stock = stockRepository.findByProductoIdAndBodegaId(productoId, bodegaId)
+                .orElseThrow(() -> new RuntimeException("Stock no encontrado"));
+
+        // Saca de Reservado -> Afuera (Se concretó la venta)
+        if (stock.getCantidadReservada() < cantidad) {
+             throw new RuntimeException("Inconsistencia: No hay suficiente stock reservado para descontar.");
+        }
+        
+        stock.setCantidadReservada(stock.getCantidadReservada() - cantidad);
+        stock.setUltimaActualizacion(LocalDateTime.now());
+
+        stockRepository.save(stock);
+    }
+    
+    @Override
+    public List<Stock> obtenerReporteReabastecimiento(Long bodegaId) {
+        if (bodegaId != null) {
+            return stockRepository.findProductosBajosDeStockPorBodega(bodegaId);
+        }
+        return stockRepository.findProductosBajosDeStock();
     }
 }
