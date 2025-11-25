@@ -1,15 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/enviroments';
 import { ReservaInventario, ReservaRequest } from '../models/reserva-inventario.model';
+import { APP_CONFIG } from '../../config/app.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReservaService {
 
-  private apiUrl = `${environment.apiUrl}/reservas`;
+  private apiUrl = `${APP_CONFIG.apiBaseUrl}/reservas`;
   private http = inject(HttpClient);
 
   /**

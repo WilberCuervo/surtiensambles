@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/enviroments';
 import { MovimientoInventario, MovimientoRequest } from '../models/movimiento-inventario.model';
+import { APP_CONFIG } from '../../config/app.config';
 
 // Asegúrate de tener una interfaz genérica para la respuesta paginada de Spring.
 // Si no la tienes en un archivo compartido, puedes definirla aquí o usar 'any'.
@@ -29,7 +29,7 @@ export interface MovimientoSearchParams {
 })
 export class MovimientoInventarioService {
 
-  private apiUrl = `${environment.apiUrl}/movimientos`;
+  private apiUrl = `${APP_CONFIG.apiBaseUrl}/movimientos`;
   private http = inject(HttpClient);
 
   /**
