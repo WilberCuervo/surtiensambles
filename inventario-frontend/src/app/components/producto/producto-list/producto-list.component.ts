@@ -37,8 +37,6 @@ import { Categoria } from '../../../core/models/categoria.model';
 })
 export class ProductoListComponent implements OnInit {
 
-  // Añadimos 'expand' a las columnas mostradas si quieres un botón específico para la expansión
-  // displayedColumns: string[] = [..., 'descripcion', ..., 'acciones', 'expand']; 
 
   displayedColumns: string[] = [
     'sku',
@@ -61,8 +59,6 @@ export class ProductoListComponent implements OnInit {
   sortField = 'id';
   sortDir: 'asc' | 'desc' = 'asc';
   
-  // Nuevo: Almacena el ID del producto cuya descripción está expandida. 
-  // Null si ninguna está expandida, o si queremos manejarlo por fila.
   expandedDescriptionId: number | null = null; 
   
 

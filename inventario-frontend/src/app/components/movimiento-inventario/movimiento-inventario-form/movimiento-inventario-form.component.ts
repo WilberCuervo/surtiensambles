@@ -7,12 +7,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatIconModule } from '@angular/material/icon';
+
+import { debounceTime, distinctUntilChanged, switchMap, filter, finalize } from 'rxjs/operators';
 
 import { MovimientoInventarioService } from '../../../core/services/movimiento-inventario.service';
 import { ProductoService } from '../../../core/services/producto.service';
 import { BodegaService } from '../../../core/services/bodega.service';
 
-// Modelos
 import { Producto } from '../../../core/models/producto.model';
 import { Bodega } from '../../../core/models/bodega.model';
 
@@ -21,7 +24,8 @@ import { Bodega } from '../../../core/models/bodega.model';
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, RouterModule,
-    MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatCardModule
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, 
+    MatCardModule, MatAutocompleteModule, MatIconModule
   ],
   templateUrl: './movimiento-inventario-form.component.html',
   styleUrls: ['./movimiento-inventario-form.component.css']
@@ -29,10 +33,21 @@ import { Bodega } from '../../../core/models/bodega.model';
 export class MovimientoInventarioFormComponent implements OnInit {
 
   movForm!: FormGroup;
-  productos: Producto[] = [];
-  bodegas: Bodega[] = []; // Asegúrate de cargar esto desde tu BodegaService
+  
+  // Listas filtradas para los autocompletados
+  productosFiltrados: Producto[] = []; 
+  bodegasFiltradas: Bodega[] = [];        // Para Bodega normal
+  bodegasOrigenFiltradas: Bodega[] = [];  // Para Origen (Transferencia)
+  bodegasDestinoFiltradas: Bodega[] = []; // Para Destino (Transferencia)
   
   saving = false;
+  loadingProductos = false;
+  
+  // Spinners independientes para cada campo de bodega
+  loadingBodegas = false;
+  loadingBodegasOrigen = false;
+  loadingBodegasDestino = false;
+
   esTransferencia = false;
   fechaActual = new Date();
 
@@ -44,7 +59,8 @@ export class MovimientoInventarioFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    this.loadCatalogos();
+    this.setupAutocompleteProducto();
+    this.setupAutocompleteBodegas(); // Configurar los 3 buscadores de bodegas
   }
 
   initForm() {
@@ -53,7 +69,7 @@ export class MovimientoInventarioFormComponent implements OnInit {
       productoId: [null, Validators.required],
       cantidad: [1, [Validators.required, Validators.min(1)]],
       
-      // Campos condicionales (se validan según el tipo)
+      // Campos condicionales (guardan objeto Bodega temporalmente)
       bodegaId: [null], 
       bodegaOrigenId: [null],
       bodegaDestinoId: [null],
@@ -61,33 +77,93 @@ export class MovimientoInventarioFormComponent implements OnInit {
       nota: [''],
       referenciaTipo: [''],
       referenciaId: [''],
-      usuario: ['Admin'] // Aquí podrías poner el usuario logueado
+      usuario: ['Admin']
     });
     
-    // Configurar validaciones iniciales
     this.onTipoChange();
   }
 
-  loadCatalogos() {
-    // 1. Cargar Productos
-    this.productoSvc.list({page: 0, size: 100}).subscribe({
-      next: (res) => {
-        this.productos = res.content;
-      },
-      error: (err) => console.error('Error cargando productos', err)
-    });
-
-    // 2. Cargar Bodegas
-    this.bodegaSvc.getAll().subscribe({
-      next: (data) => {
-        this.bodegas = data;
-      },
-      error: (err) => console.error('Error cargando bodegas', err)
-    });
+  setupAutocompleteProducto() {
+    this.movForm.get('productoId')?.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter(valor => typeof valor === 'string'),
+        switchMap(valor => {
+          this.loadingProductos = true;
+          return this.productoSvc.list({ page: 0, size: 10, search: valor, activo: true })
+            .pipe(finalize(() => this.loadingProductos = false));
+        })
+      )
+      .subscribe({
+        next: (res) => this.productosFiltrados = res.content,
+        error: () => this.productosFiltrados = []
+      });
   }
+
   /**
-   * Lógica reactiva: Cuando cambia el tipo, ajustamos los validadores
+   * Configura los escuchadores para los 3 posibles campos de bodega
    */
+  setupAutocompleteBodegas() {
+    // 1. Bodega Simple (Entrada/Salida)
+    this.movForm.get('bodegaId')?.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter(valor => typeof valor === 'string'),
+        switchMap(valor => {
+          this.loadingBodegas = true;
+          return this.bodegaSvc.list({ page: 0, size: 10, search: valor, activo: true })
+            .pipe(finalize(() => this.loadingBodegas = false));
+        })
+      ).subscribe({
+        next: (res) => this.bodegasFiltradas = res.content,
+        error: () => this.bodegasFiltradas = []
+      });
+
+    // 2. Bodega Origen (Transferencia)
+    this.movForm.get('bodegaOrigenId')?.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter(valor => typeof valor === 'string'),
+        switchMap(valor => {
+          this.loadingBodegasOrigen = true;
+          return this.bodegaSvc.list({ page: 0, size: 10, search: valor, activo: true })
+            .pipe(finalize(() => this.loadingBodegasOrigen = false));
+        })
+      ).subscribe({
+        next: (res) => this.bodegasOrigenFiltradas = res.content,
+        error: () => this.bodegasOrigenFiltradas = []
+      });
+
+    // 3. Bodega Destino (Transferencia)
+    this.movForm.get('bodegaDestinoId')?.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter(valor => typeof valor === 'string'),
+        switchMap(valor => {
+          this.loadingBodegasDestino = true;
+          return this.bodegaSvc.list({ page: 0, size: 10, search: valor, activo: true })
+            .pipe(finalize(() => this.loadingBodegasDestino = false));
+        })
+      ).subscribe({
+        next: (res) => this.bodegasDestinoFiltradas = res.content,
+        error: () => this.bodegasDestinoFiltradas = []
+      });
+  }
+
+  displayProducto(producto: any): string {
+    if (!producto) return '';
+    return producto.nombre ? `${producto.sku} - ${producto.nombre}` : '';
+  }
+
+  displayBodega(bodega: any): string {
+    if (!bodega) return '';
+    return bodega.nombre ? `${bodega.nombre}` : '';
+  }
+
   onTipoChange() {
     const tipo = this.movForm.get('tipo')?.value;
     this.esTransferencia = (tipo === 'TRANSFERENCIA');
@@ -96,15 +172,14 @@ export class MovimientoInventarioFormComponent implements OnInit {
     const origenCtrl = this.movForm.get('bodegaOrigenId');
     const destinoCtrl = this.movForm.get('bodegaDestinoId');
 
+    // Limpiar valores y validadores al cambiar de tipo
     if (this.esTransferencia) {
-      // Si es transferencia, requerimos origen y destino, limpiamos bodega simple
       bodegaCtrl?.clearValidators();
       bodegaCtrl?.setValue(null);
       
       origenCtrl?.setValidators(Validators.required);
       destinoCtrl?.setValidators(Validators.required);
     } else {
-      // Si es Entrada/Salida/Ajuste, requerimos bodega simple
       bodegaCtrl?.setValidators(Validators.required);
       
       origenCtrl?.clearValidators();
@@ -113,7 +188,6 @@ export class MovimientoInventarioFormComponent implements OnInit {
       destinoCtrl?.setValue(null);
     }
 
-    // Actualizar estado de validación
     bodegaCtrl?.updateValueAndValidity();
     origenCtrl?.updateValueAndValidity();
     destinoCtrl?.updateValueAndValidity();
@@ -125,8 +199,44 @@ export class MovimientoInventarioFormComponent implements OnInit {
       return;
     }
 
+    // Validaciones de selección de objetos
+    const prodVal = this.movForm.get('productoId')?.value;
+    if (typeof prodVal === 'string' || !prodVal?.id) {
+      alert("Selecciona un producto válido de la lista.");
+      return;
+    }
+
+    // Validación específica de bodegas según el tipo
+    if (this.esTransferencia) {
+      const origen = this.movForm.get('bodegaOrigenId')?.value;
+      const destino = this.movForm.get('bodegaDestinoId')?.value;
+      
+      if (typeof origen === 'string' || !origen?.id) { alert("Selecciona una Bodega Origen válida."); return; }
+      if (typeof destino === 'string' || !destino?.id) { alert("Selecciona una Bodega Destino válida."); return; }
+      if (origen.id === destino.id) { alert("La bodega de origen y destino no pueden ser la misma."); return; }
+
+    } else {
+      const bodega = this.movForm.get('bodegaId')?.value;
+      if (typeof bodega === 'string' || !bodega?.id) { alert("Selecciona una bodega válida."); return; }
+    }
+
     this.saving = true;
-    this.movimientoSvc.create(this.movForm.value).subscribe({
+
+    // Clonar y extraer IDs
+    const formValue = { ...this.movForm.value };
+    formValue.productoId = prodVal.id;
+
+    if (this.esTransferencia) {
+      formValue.bodegaOrigenId = formValue.bodegaOrigenId.id;
+      formValue.bodegaDestinoId = formValue.bodegaDestinoId.id;
+      delete formValue.bodegaId; // Limpiar campo no usado
+    } else {
+      formValue.bodegaId = formValue.bodegaId.id;
+      delete formValue.bodegaOrigenId;
+      delete formValue.bodegaDestinoId;
+    }
+
+    this.movimientoSvc.create(formValue).subscribe({
       next: () => {
         this.saving = false;
         this.router.navigate(['/movimientos']);
@@ -141,12 +251,5 @@ export class MovimientoInventarioFormComponent implements OnInit {
 
   cancel() {
     this.router.navigate(['/movimientos']);
-  }
-  
-  getSelectedProductoLabel(): string {
-      const id = this.movForm.get('productoId')?.value;
-      if(!id) return '';
-      const p = this.productos.find(prod => prod.id === id);
-      return p ? `${p.sku} - ${p.nombre}` : '';
   }
 }

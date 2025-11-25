@@ -22,44 +22,118 @@
            </mat-form-field>
         </div>
 
+        <!-- BUSCADOR DE PRODUCTOS (AUTOCOMPLETE) -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Producto</mat-label>
-          <mat-select formControlName="productoId">
-            <mat-select-trigger>
-               {{ getSelectedProductoLabel() }}
-            </mat-select-trigger>
-            <mat-option *ngFor="let p of productos" [value]="p.id">
-              {{ p.sku }} - {{ p.nombre }}
+          <mat-label>Buscar Producto (SKU o Nombre)</mat-label>
+          
+          <input type="text"
+                 matInput
+                 formControlName="productoId"
+                 [matAutocomplete]="autoProducto"
+                 placeholder="Escribe para buscar...">
+                 
+          <mat-icon matSuffix *ngIf="loadingProductos">hourglass_empty</mat-icon>
+          <mat-icon matSuffix *ngIf="!loadingProductos">search</mat-icon>
+
+          <mat-autocomplete #autoProducto="matAutocomplete" [displayWith]="displayProducto">
+            <mat-option *ngFor="let p of productosFiltrados" [value]="p">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <span style="background:#eee; padding: 2px 6px; border-radius:4px; font-weight:bold; font-size:0.85em;">{{ p.sku }}</span>
+                <span>{{ p.nombre }}</span>
+              </div>
             </mat-option>
-          </mat-select>
-          <mat-error *ngIf="movForm.get('productoId')?.hasError('required')">El producto es requerido</mat-error>
+            
+            <mat-option *ngIf="productosFiltrados.length === 0 && !loadingProductos" disabled>
+              No se encontraron productos.
+            </mat-option>
+          </mat-autocomplete>
+
+          <mat-error *ngIf="movForm.get('productoId')?.hasError('required')">
+            Debes seleccionar un producto válido
+          </mat-error>
         </mat-form-field>
 
+        <!-- 1. BODEGA SIMPLE (Para Entrada/Salida/Ajuste) -->
         <ng-container *ngIf="!esTransferencia">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Bodega</mat-label>
-            <mat-select formControlName="bodegaId">
-              <mat-option *ngFor="let b of bodegas" [value]="b.id">{{ b.nombre }}</mat-option>
-            </mat-select>
-            <mat-error>Requerido</mat-error>
+            <mat-label>Buscar Bodega (Nombre o Código)</mat-label>
+            
+            <input type="text"
+                   matInput
+                   formControlName="bodegaId"
+                   [matAutocomplete]="autoBodega"
+                   placeholder="Escribe para buscar...">
+                   
+            <mat-icon matSuffix *ngIf="loadingBodegas">hourglass_empty</mat-icon>
+            <mat-icon matSuffix *ngIf="!loadingBodegas">store</mat-icon>
+
+            <mat-autocomplete #autoBodega="matAutocomplete" [displayWith]="displayBodega">
+              <mat-option *ngFor="let b of bodegasFiltradas" [value]="b">
+                <span>{{ b.nombre }}</span> <small style="color:gray; margin-left: 8px;">({{ b.codigo }})</small>
+              </mat-option>
+              
+              <mat-option *ngIf="bodegasFiltradas.length === 0 && !loadingBodegas" disabled>
+                No se encontraron bodegas.
+              </mat-option>
+            </mat-autocomplete>
+
+            <mat-error *ngIf="movForm.get('bodegaId')?.hasError('required')">
+              Requerido
+            </mat-error>
           </mat-form-field>
         </ng-container>
 
+        <!-- 2. BODEGAS PARA TRANSFERENCIA (Origen y Destino) -->
         <div class="row" *ngIf="esTransferencia">
+          
+          <!-- Origen -->
           <mat-form-field appearance="outline" class="col-half">
-            <mat-label>Bodega Origen</mat-label>
-            <mat-select formControlName="bodegaOrigenId">
-              <mat-option *ngFor="let b of bodegas" [value]="b.id">{{ b.nombre }}</mat-option>
-            </mat-select>
+            <mat-label>Buscar Bodega Origen</mat-label>
+            
+            <input type="text"
+                   matInput
+                   formControlName="bodegaOrigenId"
+                   [matAutocomplete]="autoOrigen"
+                   placeholder="Sale de...">
+                   
+            <mat-icon matSuffix *ngIf="loadingBodegasOrigen">hourglass_empty</mat-icon>
+            <mat-icon matSuffix *ngIf="!loadingBodegasOrigen">flight_takeoff</mat-icon>
+
+            <mat-autocomplete #autoOrigen="matAutocomplete" [displayWith]="displayBodega">
+              <mat-option *ngFor="let b of bodegasOrigenFiltradas" [value]="b">
+                <span>{{ b.nombre }}</span>
+              </mat-option>
+              <mat-option *ngIf="bodegasOrigenFiltradas.length === 0 && !loadingBodegasOrigen" disabled>
+                No se encontraron bodegas.
+              </mat-option>
+            </mat-autocomplete>
+
+            <mat-error *ngIf="movForm.get('bodegaOrigenId')?.hasError('required')">Requerido</mat-error>
           </mat-form-field>
 
+          <!-- Destino -->
           <mat-form-field appearance="outline" class="col-half">
-            <mat-label>Bodega Destino</mat-label>
-            <mat-select formControlName="bodegaDestinoId">
-              <mat-option *ngFor="let b of bodegas" [value]="b.id" [disabled]="b.id === movForm.get('bodegaOrigenId')?.value">
-                {{ b.nombre }}
+            <mat-label>Buscar Bodega Destino</mat-label>
+            
+            <input type="text"
+                   matInput
+                   formControlName="bodegaDestinoId"
+                   [matAutocomplete]="autoDestino"
+                   placeholder="Llega a...">
+                   
+            <mat-icon matSuffix *ngIf="loadingBodegasDestino">hourglass_empty</mat-icon>
+            <mat-icon matSuffix *ngIf="!loadingBodegasDestino">flight_land</mat-icon>
+
+            <mat-autocomplete #autoDestino="matAutocomplete" [displayWith]="displayBodega">
+              <mat-option *ngFor="let b of bodegasDestinoFiltradas" [value]="b">
+                <span>{{ b.nombre }}</span>
               </mat-option>
-            </mat-select>
+              <mat-option *ngIf="bodegasDestinoFiltradas.length === 0 && !loadingBodegasDestino" disabled>
+                No se encontraron bodegas.
+              </mat-option>
+            </mat-autocomplete>
+
+            <mat-error *ngIf="movForm.get('bodegaDestinoId')?.hasError('required')">Requerido</mat-error>
           </mat-form-field>
         </div>
 

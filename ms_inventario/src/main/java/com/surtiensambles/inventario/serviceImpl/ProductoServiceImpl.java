@@ -109,13 +109,19 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public Producto actualizar(Long id, Producto producto) {
         Producto existente = findById(id)
-                                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         
         existente.setNombre(producto.getNombre());
         existente.setDescripcion(producto.getDescripcion());
         existente.setActivo(producto.getActivo());
-        existente.setUpdatedAt(LocalDateTime.now());
         existente.setCategoria(producto.getCategoria());
+        existente.setUpdatedAt(LocalDateTime.now());
+
+        existente.setSku(producto.getSku());
+        existente.setPrecioReferencia(producto.getPrecioReferencia());
+        existente.setUnidadMedida(producto.getUnidadMedida());
+        existente.setNivelReorden(producto.getNivelReorden());
+        // ---------------------------------------
         
         return productoRepository.save(existente);
     }

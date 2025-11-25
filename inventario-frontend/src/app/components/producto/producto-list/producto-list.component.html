@@ -76,19 +76,19 @@
 
     <ng-container matColumnDef="unidad_medida">
       <mat-header-cell *matHeaderCellDef>Unidad</mat-header-cell>
-      <mat-cell *matCellDef="let p">{{p.unidad_medida}}</mat-cell>
+      <mat-cell *matCellDef="let p">{{p.unidadMedida}}</mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="precio_referencia">
-      <mat-header-cell *matHeaderCellDef (click)="onSort('precio_referencia')" class="sortable">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('precioReferencia')" class="sortable">
         Precio
       </mat-header-cell>
-      <mat-cell *matCellDef="let p">{{p.precio_referencia}}</mat-cell>
+      <mat-cell *matCellDef="let p">{{p.precioReferencia}}</mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="nivel_reorden">
       <mat-header-cell *matHeaderCellDef>Niv. Reorden</mat-header-cell>
-      <mat-cell *matCellDef="let p">{{p.nivel_reorden}}</mat-cell>
+      <mat-cell *matCellDef="let p">{{p.nivelReorden}}</mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="estado">

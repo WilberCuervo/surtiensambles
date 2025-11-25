@@ -4,35 +4,83 @@
     <mat-card-content>
       <form [formGroup]="reservaForm" (ngSubmit)="submit()">
 
+        <!-- BUSCADOR DE PRODUCTOS (AUTOCOMPLETE) -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Producto</mat-label>
-          <mat-select formControlName="productoId">
-            <mat-option *ngFor="let p of productos" [value]="p.id">
-              {{ p.sku }} - {{ p.nombre }}
+          <mat-label>Buscar Producto (SKU o Nombre)</mat-label>
+          
+          <input type="text"
+                 matInput
+                 formControlName="productoId"
+                 [matAutocomplete]="autoProducto"
+                 placeholder="Escribe para buscar...">
+                 
+          <mat-icon matSuffix *ngIf="loadingProductos">hourglass_empty</mat-icon>
+          <mat-icon matSuffix *ngIf="!loadingProductos">search</mat-icon>
+
+          <mat-autocomplete #autoProducto="matAutocomplete" [displayWith]="displayProducto">
+            <mat-option *ngFor="let p of productosFiltrados" [value]="p">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <span style="background:#eee; padding: 2px 6px; border-radius:4px; font-weight:bold; font-size:0.85em;">{{ p.sku }}</span>
+                <span>{{ p.nombre }}</span>
+              </div>
             </mat-option>
-          </mat-select>
-          <mat-error>Requerido</mat-error>
+            
+            <mat-option *ngIf="productosFiltrados.length === 0 && !loadingProductos" disabled>
+              No se encontraron productos.
+            </mat-option>
+          </mat-autocomplete>
+
+          <mat-error *ngIf="reservaForm.get('productoId')?.hasError('required')">
+            Requerido
+          </mat-error>
         </mat-form-field>
 
+        <!-- BUSCADOR DE BODEGAS (AUTOCOMPLETE) -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Bodega</mat-label>
-          <mat-select formControlName="bodegaId">
-            <mat-option *ngFor="let b of bodegas" [value]="b.id">{{ b.nombre }}</mat-option>
-          </mat-select>
-          <mat-error>Requerido</mat-error>
+          <mat-label>Buscar Bodega (Nombre o Código)</mat-label>
+          
+          <input type="text"
+                 matInput
+                 formControlName="bodegaId"
+                 [matAutocomplete]="autoBodega"
+                 placeholder="Escribe para buscar...">
+                 
+          <mat-icon matSuffix *ngIf="loadingBodegas">hourglass_empty</mat-icon>
+          <mat-icon matSuffix *ngIf="!loadingBodegas">store</mat-icon>
+
+          <mat-autocomplete #autoBodega="matAutocomplete" [displayWith]="displayBodega">
+            <mat-option *ngFor="let b of bodegasFiltradas" [value]="b">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <span>{{ b.nombre }}</span>
+                <small style="color:gray; margin-left: 8px;">({{ b.codigo }})</small>
+              </div>
+            </mat-option>
+            
+            <mat-option *ngIf="bodegasFiltradas.length === 0 && !loadingBodegas" disabled>
+              No se encontraron bodegas.
+            </mat-option>
+          </mat-autocomplete>
+
+          <mat-error *ngIf="reservaForm.get('bodegaId')?.hasError('required')">
+            Requerido
+          </mat-error>
         </mat-form-field>
 
+        <!-- Cantidad -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Cantidad a Reservar</mat-label>
           <input matInput type="number" formControlName="cantidad" min="1">
           <mat-error>Mínimo 1</mat-error>
         </mat-form-field>
 
+        <!-- Nota / Cliente -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Nombre Cliente / Nota</mat-label>
           <input matInput formControlName="nota" placeholder="Ej: Juan Pérez - Paga mañana">
+          <mat-error>Requerido</mat-error>
         </mat-form-field>
 
+        <!-- Fecha Expiración (Opcional) -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Válida hasta</mat-label>
           <input matInput [matDatepicker]="picker" formControlName="fechaExpiracion">

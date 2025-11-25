@@ -78,9 +78,9 @@ export class ProductoFormComponent implements OnInit {
       sku: ['', Validators.required],
       nombre: ['', Validators.required],
       descripcion: [''],
-      unidad_medida: [''],
-      precio_referencia: [0, [Validators.required, Validators.min(0)]],
-      nivel_reorden: [0, [Validators.required, Validators.min(0)]],
+      unidadMedida: [''],
+      precioReferencia: [0, [Validators.required, Validators.min(0)]],
+      nivelReorden: [0, [Validators.required, Validators.min(0)]],
       activo: [true],
       categoriaId: [null, Validators.required]
     });
