@@ -1,17 +1,18 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatOption, MatSelectModule } from '@angular/material/select';
-import { RouterModule, Router } from '@angular/router';
+import { MatSelectModule } from '@angular/material/select';
+import { MatPaginator } from '@angular/material/paginator';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { Categoria } from '../../../core/models/categoria.model';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-categoria-list',
@@ -21,11 +22,10 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
     MatInputModule,
-    MatOption,
+    MatFormFieldModule,
     MatSelectModule,
+    MatPaginator,
     ReactiveFormsModule,
     RouterModule
   ],
@@ -34,20 +34,18 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class CategoriaListComponent implements OnInit {
 
-  displayedColumns = ['id', 'nombre', 'descripcion', 'estado', 'acciones'];
+  displayedColumns: string[] = ['nombre', 'descripcion', 'estado', 'acciones'];
 
   categorias: Categoria[] = [];
-
-  searchControl = new FormControl<string>('', { nonNullable: true });
-  statusFilterControl = new FormControl(null);
-
-  // PAGINACIÓN
   totalItems = 0;
-  pageSize = 10;
   pageIndex = 0;
+  pageSize = 10;
 
   sortField = 'id';
   sortDir: 'asc' | 'desc' = 'asc';
+
+  searchControl = new FormControl('');
+  estadoFilterControl = new FormControl(null);
 
   loading = false;
 
@@ -55,14 +53,13 @@ export class CategoriaListComponent implements OnInit {
   private router = inject(Router);
 
   ngOnInit(): void {
+    // Filtro estado
+    this.estadoFilterControl.valueChanges.subscribe(() => {
+      this.pageIndex = 0;
+      this.loadData();
+    });
 
-    this.statusFilterControl.valueChanges
-      .pipe(distinctUntilChanged())
-      .subscribe(() => {
-        this.pageIndex = 0;
-        this.loadData();
-      });
-
+    // Búsqueda con debounce
     this.searchControl.valueChanges
       .pipe(debounceTime(400), distinctUntilChanged())
       .subscribe(() => {
@@ -77,28 +74,34 @@ export class CategoriaListComponent implements OnInit {
     this.loading = true;
 
     const search = this.searchControl.value || '';
-    const estado = this.statusFilterControl.value;
+    const activo = this.estadoFilterControl.value;
     const sort = `${this.sortField},${this.sortDir}`;
 
-    this.svc.list(
-      this.pageIndex,
-      this.pageSize,
-      search,
-      sort,
-      estado
-    ).subscribe({
+    this.svc.list(this.pageIndex, this.pageSize, search, sort, activo).subscribe({
       next: res => {
         this.categorias = res.content;
         this.totalItems = res.totalElements;
         this.loading = false;
       },
-      error: () => {
-        this.loading = false;
-      }
+      error: () => (this.loading = false)
     });
   }
 
-  onPageChange(event: PageEvent) {
+  new() {
+    this.router.navigate(['/categorias/nueva']);
+  }
+
+  edit(id: number) {
+    this.router.navigate(['/categorias/editar', id]);
+  }
+
+  delete(id: number) {
+    if (confirm('¿Eliminar categoría?')) {
+      this.svc.delete(id).subscribe(() => this.loadData());
+    }
+  }
+
+  onPageChange(event: any) {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     this.loadData();
@@ -114,23 +117,9 @@ export class CategoriaListComponent implements OnInit {
     this.loadData();
   }
 
-  new() {
-    this.router.navigate(['/categorias/nueva']);
-  }
-
-  edit(id: number) {
-    this.router.navigate(['/categorias/editar/' + id]);
-  }
-
-  delete(id: number) {
-    if (confirm('¿Eliminar categoría?')) {
-      this.svc.delete(id).subscribe(() => this.loadData());
-    }
-  }
-
   clearFilters() {
     this.searchControl.setValue('');
-    this.statusFilterControl.reset(null);
+    this.estadoFilterControl.setValue(null);
     this.pageIndex = 0;
     this.loadData();
   }

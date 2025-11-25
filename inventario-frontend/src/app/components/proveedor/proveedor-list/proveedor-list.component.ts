@@ -11,7 +11,7 @@ import { MatOption, MatSelectModule } from '@angular/material/select';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-import { ProveedorService } from '../../../core/services/proveedor.service';
+import { ProveedorService, ProveedorSearchParams } from '../../../core/services/proveedor.service';
 import { Proveedor } from '../../../core/models/proveedor.model';
 
 @Component({
@@ -48,7 +48,7 @@ export class ProveedorListComponent implements OnInit {
   proveedores: Proveedor[] = [];
 
   searchControl = new FormControl('');
-  statusFilterControl = new FormControl(null);
+  statusFilterControl = new FormControl<boolean | null>(null);
   
   totalItems = 0;
   pageIndex = 0;
@@ -84,17 +84,16 @@ export class ProveedorListComponent implements OnInit {
 
     this.loading = true;
 
-    const search = this.searchControl.value || '';
-    const estado = this.statusFilterControl.value;
-    const sort = `${this.sortField},${this.sortDir}`;
+    const params: ProveedorSearchParams = {
+      page: this.pageIndex,
+      size: this.pageSize,
+      search: this.searchControl.value || '',
+      activo: this.statusFilterControl.value,
+      sortBy: this.sortField,
+      sortDirection: this.sortDir
+    };
 
-    this.svc.list(
-      this.pageIndex,
-      this.pageSize,
-      search,
-      sort,
-      estado
-    ).subscribe({
+    this.svc.list(params).subscribe({
       next: res => {
         this.proveedores = res.content;
         this.totalItems = res.totalElements;
@@ -140,7 +139,7 @@ export class ProveedorListComponent implements OnInit {
 
   clearFilters() {
     this.searchControl.setValue('');
-    this.statusFilterControl.reset(null);
+    this.statusFilterControl.setValue(null);
     this.pageIndex = 0;
     this.loadData();
   }

@@ -31,26 +31,19 @@ export class CategoriaService {
   
    //Listar categorías con paginación + búsqueda + ordenamiento
    
-  list(
-    page: number,
-    size: number,
-    search: string = '',
-    sort: string = 'id,asc',
-    activo?: boolean | null
-  ): Observable<CategoriaPage> {
+  list(page = 0, size = 10, search = '', sort = 'id,asc', activo: boolean | null = null) {
+  let params = new HttpParams()
+    .set('page', page)
+    .set('size', size)
+    .set('search', search)
+    .set('sort', sort);
 
-    let params = new HttpParams()
-      .set('page', page)
-      .set('size', size)
-      .set('search', search)
-      .set('sort', sort);
-
-    if (activo !== null && activo !== undefined) {
-    params = params.set('activo', activo.toString());
+  if (activo !== null) {
+    params = params.set('activo', activo);
   }
 
-    return this.http.get<CategoriaPage>(`${this.base}`, { params });
-  }
+  return this.http.get<any>(`${this.base}`, { params });
+}
 
   get(id: number): Observable<Categoria> {
     return this.http.get<Categoria>(`${this.base}/${id}`);

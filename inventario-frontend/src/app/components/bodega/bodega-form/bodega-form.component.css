@@ -1,3 +1,34 @@
-.form-page { padding:16px; max-width:700px; }
-.full { width:100%; margin-bottom:12px; }
-.buttons { margin-top:12px; display:flex; gap:8px; }
+.form-wrapper {
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+}
+
+.card {
+    /* Puedes añadir estilos específicos para la tarjeta si lo deseas */
+}
+
+/* Usamos grid para un layout responsive, similar al de proveedores */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columnas */
+  gap: 10px;
+}
+
+.full {
+  grid-column: 1 / -1; /* Ocupa ambas columnas si es necesario, como la ubicación */
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.checkbox-activo {
+  margin-top: 15px;
+  grid-column: 1 / -1; /* Ocupa ambas columnas */
+}
+
+.buttons {
+  /* Alineación de botones si es necesario */
+  gap: 10px;
+}

@@ -1,40 +1,38 @@
 <div class="page">
 
-  <div class="page-header">
-    <h2>Categorías</h2>
+  <h2>Categorías</h2>
 
+  <div class="page-header">
     <div class="actions">
+
       <!-- Buscar -->
       <mat-form-field appearance="outline" class="search-field">
-        <mat-label>Buscar</mat-label>
-        <input matInput [formControl]="searchControl" name="search" placeholder="Nombre categoría">
+        <mat-label>Buscar categoría</mat-label>
+        <input matInput [formControl]="searchControl" placeholder="Nombre">
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
 
-      <!-- Filtrar estado -->
+      <!-- Filtro estado -->
       <mat-form-field appearance="outline">
         <mat-label>Estado</mat-label>
-        <mat-select [formControl]="statusFilterControl"> 
+        <mat-select [formControl]="estadoFilterControl">
           <mat-option [value]="null">Todos</mat-option>
           <mat-option [value]="true">Activos</mat-option>
           <mat-option [value]="false">Inactivos</mat-option>
         </mat-select>
       </mat-form-field>
 
-       <button mat-stroked-button (click)="clearFilters()">Limpiar</button>
+      <button mat-stroked-button (click)="clearFilters()">Limpiar</button>
       <button mat-raised-button color="primary" (click)="new()">Nueva</button>
     </div>
   </div>
 
   <mat-table [dataSource]="categorias" class="mat-elevation-z2 bordered-table" *ngIf="!loading">
 
-    <ng-container matColumnDef="id">
-      <mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
-      <mat-cell *matCellDef="let c">{{ c.id }}</mat-cell>
-    </ng-container>
-
     <ng-container matColumnDef="nombre">
-      <mat-header-cell *matHeaderCellDef>Nombre</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef (click)="onSort('nombre')" class="sortable">
+        Nombre
+      </mat-header-cell>
       <mat-cell *matCellDef="let c">{{ c.nombre }}</mat-cell>
     </ng-container>
 
@@ -47,7 +45,7 @@
       <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
       <mat-cell *matCellDef="let c">
         <span [class.active]="c.activo" [class.inactive]="!c.activo">
-          {{ c.activo ? "Activo" : "Inactivo" }}
+          {{ c.activo ? 'Activo' : 'Inactivo' }}
         </span>
       </mat-cell>
     </ng-container>
@@ -64,20 +62,20 @@
       </mat-cell>
     </ng-container>
 
-    <mat-header-row *matHeaderRowDef="displayedColumns"/>
-    <mat-row *matRowDef="let row; columns: displayedColumns"/>
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
   </mat-table>
 
   <div *ngIf="loading" class="loading">Cargando…</div>
-  <div *ngIf="!loading && categorias.length === 0" class="empty">No hay resultados</div>
+  <div *ngIf="!loading && categorias.length === 0" class="empty">Sin resultados</div>
 
-  <!-- PAGINACIÓN -->
   <mat-paginator
     [length]="totalItems"
     [pageIndex]="pageIndex"
     [pageSize]="pageSize"
-    [pageSizeOptions]="[5, 10, 25]"
-    (page)="onPageChange($event)"
-  ></mat-paginator>
+    [pageSizeOptions]="[5, 10, 25, 50]"
+    (page)="onPageChange($event)">
+  </mat-paginator>
 
 </div>

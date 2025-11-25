@@ -1,5 +1,6 @@
 package com.surtiensambles.inventario.serviceImpl;
 
+import com.surtiensambles.inventario.dto.PageRequestDto;
 import com.surtiensambles.inventario.entity.Proveedor;
 import com.surtiensambles.inventario.repository.ProveedorRepository;
 import com.surtiensambles.inventario.service.ProveedorService;
@@ -10,61 +11,94 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
+import jakarta.persistence.criteria.Predicate;
+
 @Service
 @RequiredArgsConstructor
 public class ProveedorServiceImpl implements ProveedorService {
 
 	private final ProveedorRepository repo;
 
+    /**
+     * Implementación centralizada de listado paginado y filtrado para Proveedores.
+     */
 	@Override
-	public Page<Proveedor> list(int page, int size, String search, Boolean activo, String sort) {
+	public Page<Proveedor> listarPaginado(PageRequestDto requestDto) {
 
-		String[] sortParts = sort.split(",");
-		String sortByField = sortParts[0];
-		Sort.Direction sortDirection = (sortParts.length == 2 && sortParts[1].equalsIgnoreCase("desc"))
-				? Sort.Direction.DESC
-				: Sort.Direction.ASC;
+		// 1. Convertir DTO a objetos Pageable y Sort de Spring
+		Sort order = Sort.by(requestDto.getSortDirection(), requestDto.getSortBy());
+		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize(), order);
 
-		Sort order = Sort.by(sortDirection, sortByField);
+		// 2. Construir la Specification dinámica
+		Specification<Proveedor> spec = buildSpecification(requestDto);
 
-		Pageable pageable = PageRequest.of(page, size, order);
-
-		Specification<Proveedor> spec = Specification.where(null);
-
-		if (search != null && !search.trim().isEmpty()) {
-			String like = "%" + search.toLowerCase() + "%";
-			Specification<Proveedor> searchSpec = (root, query, cb) -> cb
-					.or(cb.like(cb.lower(root.get("nombre")), like), cb.like(cb.lower(root.get("nit")), like));
-			spec = spec.and(searchSpec);
-		}
-
-		if (activo != null) {
-			Specification<Proveedor> activoSpec = (root, query, cb) -> cb.equal(root.get("activo"), activo);
-			spec = spec.and(activoSpec);
-		}
-
+		// 3. Ejecutar la consulta
 		return repo.findAll(spec, pageable);
 	}
 
+    /**
+     * Método helper privado para construir la Specification dinámica de Proveedor.
+     * Maneja la búsqueda por nombre/nit y por estado activo.
+     */
+    private Specification<Proveedor> buildSpecification(PageRequestDto requestDto) {
+        return (root, query, cb) -> {
+            Predicate combinedPredicate = cb.conjunction();
+
+            // Filtro por nombre o NIT (búsqueda general)
+            if (requestDto.getSearch() != null && !requestDto.getSearch().trim().isEmpty()) {
+                String searchLowerCase = "%" + requestDto.getSearch().toLowerCase() + "%";
+                Predicate nombrePredicate = cb.like(cb.lower(root.get("nombre")), searchLowerCase);
+                Predicate nitPredicate = cb.like(cb.lower(root.get("nit")), searchLowerCase);
+                
+                // Combina OR (nombre OR nit)
+                Predicate searchPredicate = cb.or(nombrePredicate, nitPredicate);
+                combinedPredicate = cb.and(combinedPredicate, searchPredicate);
+            }
+
+            // Filtro por estado activo
+            if (requestDto.getActivo() != null) {
+                Predicate activoPredicate = cb.equal(root.get("activo"), requestDto.getActivo());
+                combinedPredicate = cb.and(combinedPredicate, activoPredicate);
+            }
+            
+            return combinedPredicate;
+        };
+    }
+    
+    @Override
+    public List<Proveedor> listarPorEstado(Optional<Boolean> activo) {
+        Specification<Proveedor> spec = Specification.where(null);
+        
+        if (activo.isPresent()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("activo"), activo.get()));
+        }
+        
+        return repo.findAll(spec);
+    }
+
+
 	@Override
-	public Proveedor get(Long id) {
+	public Proveedor obtener(Long id) {
 		return repo.findById(id).orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
 	}
 
 	@Override
-	public Proveedor create(Proveedor proveedor) {
+	public Proveedor crear(Proveedor proveedor) {
 
 		if (repo.existsByNitIgnoreCase(proveedor.getNit())) {
 			throw new RuntimeException("El NIT ya está registrado");
 		}
-
+		
 		return repo.save(proveedor);
 	}
 
 	@Override
-	public Proveedor update(Long id, Proveedor proveedor) {
+	public Proveedor actualizar(Long id, Proveedor proveedor) {
 
-		Proveedor existente = get(id);
+		Proveedor existente = obtener(id); // Usamos el método 'obtener' local
 
 		if (!existente.getNit().equalsIgnoreCase(proveedor.getNit())
 				&& repo.existsByNitIgnoreCase(proveedor.getNit())) {
@@ -82,8 +116,8 @@ public class ProveedorServiceImpl implements ProveedorService {
 	}
 
 	@Override
-	public void delete(Long id) {
-		repo.delete(get(id));
+	public void eliminar(Long id) {
+		repo.delete(obtener(id));
 	}
 
 	@Override

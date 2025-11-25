@@ -12,10 +12,10 @@
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
 
-      <!-- Filtrar categoría --> 
+      <!-- Filtrar categoría -->
       <mat-form-field appearance="outline">
         <mat-label>Categoría</mat-label>
-        <mat-select [(ngModel)]="selectedCategoria" (selectionChange)="loadData()">
+        <mat-select [formControl]="categoriaFilterControl">
           <mat-option [value]="null">Todas</mat-option>
           <mat-option *ngFor="let c of categorias" [value]="c.id">{{ c.nombre }}</mat-option>
         </mat-select>
@@ -24,7 +24,7 @@
       <!-- Filtrar estado -->
       <mat-form-field appearance="outline">
         <mat-label>Estado</mat-label>
-        <mat-select [formControl]="statusFilterControl"> 
+        <mat-select [formControl]="estadoFilterControl"> 
           <mat-option [value]="null">Todos</mat-option>
           <mat-option [value]="true">Activos</mat-option>
           <mat-option [value]="false">Inactivos</mat-option>
@@ -55,7 +55,18 @@
 
     <ng-container matColumnDef="descripcion">
       <mat-header-cell *matHeaderCellDef>Descripción</mat-header-cell>
-      <mat-cell *matCellDef="let p">{{p.descripcion}}</mat-cell>
+      <mat-cell *matCellDef="let p">
+        <div class="description-cell" [class.expanded]="isExpanded(p.id!)">
+          {{p.descripcion}}
+        </div>
+        <button 
+          mat-icon-button 
+          (click)="toggleDescription(p.id!)" 
+          [attr.aria-label]="isExpanded(p.id!) ? 'Contraer' : 'Expandir'"
+          class="expand-button">
+          <mat-icon>{{ isExpanded(p.id!) ? 'unfold_less' : 'unfold_more' }}</mat-icon>
+        </button>
+      </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="categoria">
@@ -83,8 +94,8 @@
     <ng-container matColumnDef="estado">
       <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
       <mat-cell *matCellDef="let p">
-        <span [class.active]="p.estado" [class.inactive]="!p.estado">
-          {{ p.estado ? "Activo" : "Inactivo" }}
+        <span [class.active]="p.activo" [class.inactive]="!p.activo">
+          {{ p.activo ? "Activo" : "Inactivo" }}
         </span>
       </mat-cell>
     </ng-container>

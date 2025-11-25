@@ -1,24 +1,58 @@
-<div class="form-page">
-  <h2>{{ editingId ? 'Editar' : 'Nueva' }} Bodega</h2>
-  <form (ngSubmit)="submit()">
-    <mat-form-field appearance="fill" class="full">
-      <mat-label>Código</mat-label>
-      <input matInput name="codigo" [(ngModel)]="bodega.codigo" required/>
-    </mat-form-field>
+<div class="form-wrapper">
+  
+  <mat-card class="card">
+    <mat-card-title>{{ editingId ? 'Editar' : 'Nueva' }} Bodega</mat-card-title>
+    
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="grid">
+        
+        <!-- Código -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo" required/>
+           <mat-icon *ngIf="loadingCodigo" matSuffix>hourglass_top</mat-icon>
+           <mat-icon *ngIf="!loadingCodigo && form.get('codigo')?.valid && codigoDisponible" matSuffix color="primary">check_circle</mat-icon>
+           <mat-icon *ngIf="!loadingCodigo && form.get('codigo')?.hasError('codigoDuplicado')" matSuffix color="warn">error</mat-icon>
 
-    <mat-form-field appearance="fill" class="full">
-      <mat-label>Nombre</mat-label>
-      <input matInput name="nombre" [(ngModel)]="bodega.nombre" required/>
-    </mat-form-field>
+          <mat-error *ngIf="form.get('codigo')?.hasError('required')">El código es obligatorio</mat-error>
+          <mat-error *ngIf="form.get('codigo')?.hasError('codigoDuplicado')">Ya existe una bodega con este código</mat-error>
+        </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full">
-      <mat-label>Ubicación</mat-label>
-      <input matInput name="ubicacion" [(ngModel)]="bodega.ubicacion"/>
-    </mat-form-field>
+        <!-- Nombre -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" required/>
+          <mat-error *ngIf="form.get('nombre')?.hasError('required')">El nombre es obligatorio</mat-error>
+        </mat-form-field>
+        
+        <!-- Ubicación -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Ubicación</mat-label>
+          <input matInput formControlName="ubicacion"/>
+        </mat-form-field>
 
-    <div class="buttons">
-      <button mat-raised-button color="primary" type="submit">Guardar</button>
-      <button mat-button type="button" (click)="cancel()">Cancelar</button>
-    </div>
-  </form>
+        <!-- Responsable -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Responsable</mat-label>
+          <input matInput formControlName="responsable"/>
+        </mat-form-field>
+        
+        <!-- Estado -->
+        <mat-checkbox formControlName="activo" color="primary" class="checkbox-activo">
+            Activo
+        </mat-checkbox>
+
+      </form>
+      
+    </mat-card-content>
+
+    <mat-card-actions align="end" class="buttons">
+      <!-- Deshabilitamos si el formulario es inválido o estamos guardando -->
+      <button mat-raised-button color="primary" (click)="submit()" [disabled]="saving || form.invalid">
+        {{ saving ? 'Guardando...' : 'Guardar' }}
+      </button>
+      <button mat-button (click)="cancel()">Cancelar</button>
+    </mat-card-actions>
+  </mat-card>
+
 </div>

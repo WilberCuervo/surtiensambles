@@ -1,79 +1,115 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
-
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ProductoService } from '../../../core/services/producto.service';
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { Producto } from '../../../core/models/producto.model';
 import { Categoria } from '../../../core/models/categoria.model';
+import { switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-producto-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatSelectModule, MatCardModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    RouterModule, 
+    MatFormFieldModule, 
+    MatInputModule, 
+    MatButtonModule, 
+    MatSelectModule, 
+    MatCardModule,
+    MatCheckboxModule
+  ],
   templateUrl: './producto-form.component.html',
   styleUrls: ['./producto-form.component.css']
 })
 export class ProductoFormComponent implements OnInit {
 
-  producto: Producto = {
-    sku: '',
-    nombre: '',
-    descripcion: '',
-    unidad_medida: '',
-    precio_referencia: 0,
-    nivel_reorden: 0,
-    categoria: null,
-    activo: true
-  };
-
+  // Definimos nuestro FormGroup
+  productoForm!: FormGroup;
   categorias: Categoria[] = [];
   productoId?: number;
   saving = false;
 
-  constructor(
-    private svc: ProductoService,
-    private categoriaSvc: CategoriaService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
+  private svc = inject(ProductoService);
+  private categoriaSvc = inject(CategoriaService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private fb = inject(FormBuilder);
 
   ngOnInit(): void {
-    // Cargar categorías
+    this.initForm();
+    
+    // Cargar categorías primero
     this.categoriaSvc.getAll().subscribe(data => this.categorias = data);
 
-    // Revisar si estamos editando
-    const id = this.route.snapshot.params['id'];
-    if (id) {
-      this.productoId = +id;
-      this.svc.get(this.productoId).subscribe(p => this.producto = p);
-    }
+    // Cargar datos del producto si es edición
+    this.route.params.pipe(
+      switchMap(params => {
+        if (params['id']) {
+          this.productoId = +params['id'];
+          return this.svc.get(this.productoId);
+        }
+        return of(null);
+      })
+    ).subscribe(producto => {
+      if (producto) {
+        // Rellenamos el formulario con los datos recibidos
+        this.productoForm.patchValue({
+          ...producto,
+          categoriaId: producto.categoria?.id || null 
+        });
+      }
+    });
+  }
+
+  // Método para inicializar la estructura del formulario con validaciones
+  initForm(): void {
+    this.productoForm = this.fb.group({
+      sku: ['', Validators.required],
+      nombre: ['', Validators.required],
+      descripcion: [''],
+      unidad_medida: [''],
+      precio_referencia: [0, [Validators.required, Validators.min(0)]],
+      nivel_reorden: [0, [Validators.required, Validators.min(0)]],
+      activo: [true],
+      categoriaId: [null, Validators.required]
+    });
   }
 
   submit() {
-    this.saving = true;
+    if (this.productoForm.invalid) {
+      this.productoForm.markAllAsTouched();
+      return;
+    }
 
-    // Crear un payload compatible con el backend
+    this.saving = true;
+    const formValue = this.productoForm.value;
+
     const payload: Producto = {
-      ...this.producto,
-      categoria: this.producto.categoria ? { id: this.producto.categoria.id } : null
+      ...formValue,
+      categoria: formValue.categoriaId ? { id: formValue.categoriaId } : null,
+      categoriaId: undefined 
     };
 
     if (this.productoId) {
       this.svc.update(this.productoId, payload).subscribe({
         next: () => { this.saving = false; this.router.navigate(['/productos']); },
-        error: () => { this.saving = false; }
+        error: (err) => { console.error(err); this.saving = false; }
       });
     } else {
       this.svc.create(payload).subscribe({
         next: () => { this.saving = false; this.router.navigate(['/productos']); },
-        error: () => { this.saving = false; }
+        error: (err) => { console.error(err); this.saving = false; }
       });
     }
   }

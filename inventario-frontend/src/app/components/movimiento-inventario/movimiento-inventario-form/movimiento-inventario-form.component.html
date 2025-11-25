@@ -1,1 +1,99 @@
-<p>movimiento-inventario-form works!</p>
+<div class="form-wrapper">
+  <mat-card class="form-card">
+    <mat-card-title class="form-title">Registrar Movimiento</mat-card-title>
+    
+    <mat-card-content>
+      <form [formGroup]="movForm" (ngSubmit)="submit()">
+
+        <div class="row">
+          <mat-form-field appearance="outline" class="col-half">
+            <mat-label>Tipo de Movimiento</mat-label>
+            <mat-select formControlName="tipo" (selectionChange)="onTipoChange()">
+              <mat-option value="ENTRADA">ENTRADA (Compra)</mat-option>
+              <mat-option value="SALIDA">SALIDA (Venta/Baja)</mat-option>
+              <mat-option value="AJUSTE">AJUSTE (Inventario físico)</mat-option>
+              <mat-option value="TRANSFERENCIA">TRANSFERENCIA (Entre bodegas)</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+           <mat-form-field appearance="outline" class="col-half">
+             <mat-label>Fecha</mat-label>
+             <input matInput [value]="fechaActual | date:'short'" disabled>
+           </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Producto</mat-label>
+          <mat-select formControlName="productoId">
+            <mat-select-trigger>
+               {{ getSelectedProductoLabel() }}
+            </mat-select-trigger>
+            <mat-option *ngFor="let p of productos" [value]="p.id">
+              {{ p.sku }} - {{ p.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="movForm.get('productoId')?.hasError('required')">El producto es requerido</mat-error>
+        </mat-form-field>
+
+        <ng-container *ngIf="!esTransferencia">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Bodega</mat-label>
+            <mat-select formControlName="bodegaId">
+              <mat-option *ngFor="let b of bodegas" [value]="b.id">{{ b.nombre }}</mat-option>
+            </mat-select>
+            <mat-error>Requerido</mat-error>
+          </mat-form-field>
+        </ng-container>
+
+        <div class="row" *ngIf="esTransferencia">
+          <mat-form-field appearance="outline" class="col-half">
+            <mat-label>Bodega Origen</mat-label>
+            <mat-select formControlName="bodegaOrigenId">
+              <mat-option *ngFor="let b of bodegas" [value]="b.id">{{ b.nombre }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="col-half">
+            <mat-label>Bodega Destino</mat-label>
+            <mat-select formControlName="bodegaDestinoId">
+              <mat-option *ngFor="let b of bodegas" [value]="b.id" [disabled]="b.id === movForm.get('bodegaOrigenId')?.value">
+                {{ b.nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Cantidad</mat-label>
+          <input matInput type="number" formControlName="cantidad" min="1">
+          <mat-error *ngIf="movForm.get('cantidad')?.hasError('min')">Debe ser mayor a 0</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nota / Observación</mat-label>
+          <textarea matInput formControlName="nota" rows="2"></textarea>
+        </mat-form-field>
+
+        <div class="row">
+          <mat-form-field appearance="outline" class="col-half">
+            <mat-label>Tipo Referencia (Ej: FACTURA)</mat-label>
+            <input matInput formControlName="referenciaTipo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="col-half">
+             <mat-label>ID Referencia (Ej: F-001)</mat-label>
+             <input matInput formControlName="referenciaId">
+           </mat-form-field>
+        </div>
+
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions class="buttons">
+      <button mat-raised-button color="primary" (click)="submit()" [disabled]="saving || movForm.invalid">
+        {{ saving ? 'Procesando...' : 'Registrar' }}
+      </button>
+      <button mat-stroked-button color="warn" (click)="cancel()">Cancelar</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

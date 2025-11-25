@@ -1,5 +1,6 @@
 package com.surtiensambles.inventario.controller;
 
+import com.surtiensambles.inventario.dto.PageRequestDto;
 import com.surtiensambles.inventario.entity.Producto;
 import com.surtiensambles.inventario.repository.CategoriaRepository;
 import com.surtiensambles.inventario.service.ProductoService;
@@ -7,11 +8,12 @@ import com.surtiensambles.inventario.service.ProductoService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -22,31 +24,42 @@ public class ProductoController {
     private final ProductoService productoService;
     private final CategoriaRepository categoriaRepo;
 
-    // Listado paginado y filtrado
-    /*
-     * este metodo se utiliz
-     * 
-     * 
-     */
+    
+    // Endpoint principal para listado paginado y filtrado de productos.
     @GetMapping
-    public Page<Producto> getAllPaged(
+    public ResponseEntity<Page<Producto>> getAllPaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long categoria,
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(required = false) Long categoriaId, 
             @RequestParam(required = false) Boolean activo,
-            @RequestParam(required = false, defaultValue = "id,asc") String sort
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
     ) {
-        String[] sortParts = sort.split(",");
-        Sort.Direction dir = Sort.Direction.ASC;
-        String sortField = "id";
-        if (sortParts.length >= 1 && !sortParts[0].isBlank()) sortField = sortParts[0];
-        if (sortParts.length >= 2 && sortParts[1].equalsIgnoreCase("desc")) dir = Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(dir, sortField));
+        // Mapea los RequestParams al DTO y delega al servicio
+        PageRequestDto requestDto = new PageRequestDto();
+        requestDto.setPage(page);
+        requestDto.setSize(size);
+        requestDto.setSearch(search);
+        requestDto.setActivo(activo);
+        requestDto.setCategoriaId(categoriaId);
+        requestDto.setSortBy(sortBy);
+        requestDto.setSortDirection(sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC);
 
-        String safeSearch = (search == null) ? "" : search; // evita null en LOWER()
-        return productoService.search(safeSearch, categoria, activo, pageable);
+        Page<Producto> pagina = productoService.listarPaginado(requestDto);
+        return ResponseEntity.ok(pagina);
     }
+    
+    /**
+     * Endpoint para obtener TODOS los productos (para dropdowns/selects u otras listas).
+     * Acepta un parámetro 'activo' opcional para filtrar.
+     */
+    @GetMapping("/all")
+    public ResponseEntity<List<Producto>> listarTodosOporEstado(@RequestParam Optional<Boolean> activo) {
+        List<Producto> productos = productoService.listarPorEstado(activo);
+        return ResponseEntity.ok(productos);
+    }
+
 
     // Obtener producto por id
     @GetMapping("/{id}")
@@ -58,21 +71,19 @@ public class ProductoController {
 
     // Crear producto
     @PostMapping
-    public Producto create(@RequestBody Producto producto) {
+    public ResponseEntity<Producto> create(@RequestBody Producto producto) {
         assignCategoria(producto);
-        return productoService.save(producto);
+        Producto nuevoProducto = productoService.crear(producto); 
+        return ResponseEntity.status(201).body(nuevoProducto);
     }
 
     // Actualizar producto
     @PutMapping("/{id}")
     public ResponseEntity<Producto> update(@PathVariable Long id, @RequestBody Producto producto) {
-        return productoService.findById(id)
-                .map(existing -> {
-                    producto.setId(id);
-                    assignCategoria(producto);
-                    return ResponseEntity.ok(productoService.save(producto));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        
+        Producto productoActualizado = productoService.actualizar(id, producto); 
+       
+        return ResponseEntity.ok(productoActualizado);
     }
 
     // Eliminar producto
@@ -82,7 +93,6 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
-    // --- MÉTODO PRIVADO PARA ASIGNAR CATEGORÍA ---
     private void assignCategoria(Producto producto) {
         if (producto.getCategoria() != null && producto.getCategoria().getId() != null) {
             var categoria = categoriaRepo.findById(producto.getCategoria().getId()).orElse(null);

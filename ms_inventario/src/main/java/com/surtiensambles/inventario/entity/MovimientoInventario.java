@@ -42,6 +42,7 @@ public class MovimientoInventario {
     @Column(length = 255)
     private String nota;
 
-    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fecha;
+    // Hibernate/JPA gestionará la fecha, o la estableceremos en el servicio
+    @Column(name = "fecha")
+    private LocalDateTime fecha; 
 }

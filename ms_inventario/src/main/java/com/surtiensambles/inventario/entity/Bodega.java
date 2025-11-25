@@ -23,7 +23,7 @@ public class Bodega {
     private String ubicacion;
     private String responsable;
 
-    @Column(nullable = false)
-    private Boolean estado = true;
     
+    @Column(nullable = false)
+    private Boolean activo = true; 
 }

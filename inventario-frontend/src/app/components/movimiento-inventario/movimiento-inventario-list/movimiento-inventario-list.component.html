@@ -1,1 +1,86 @@
-<p>movimiento-inventario-list works!</p>
+<div class="page">
+  <h2>Movimientos de Inventario</h2>
+  
+  <div class="page-header">
+    <div class="actions filters-container">
+
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar (Producto, Bodega...)</mat-label>
+        <input matInput [formControl]="searchControl" placeholder="Ej: Neopreno">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Rango de Fechas</mat-label>
+        <mat-date-range-input [formGroup]="rangeForm" [rangePicker]="picker">
+          <input matStartDate formControlName="start" placeholder="Inicio">
+          <input matEndDate formControlName="end" placeholder="Fin">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="clearFilters()">Limpiar</button>
+      <button mat-raised-button color="primary" (click)="new()">Registrar Movimiento</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <mat-table [dataSource]="movimientos" class="mat-elevation-z2 bordered-table" *ngIf="!loading">
+
+      <ng-container matColumnDef="fecha">
+        <mat-header-cell *matHeaderCellDef class="col-fecha"> Fecha </mat-header-cell>
+        <mat-cell *matCellDef="let m" class="col-fecha"> 
+          {{ m.fecha | date:'dd/MM/yyyy HH:mm' }} 
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="producto">
+        <mat-header-cell *matHeaderCellDef> Producto </mat-header-cell>
+        <mat-cell *matCellDef="let m"> {{ m.producto?.nombre }} ({{m.producto?.sku}}) </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="bodega">
+        <mat-header-cell *matHeaderCellDef> Bodega </mat-header-cell>
+        <mat-cell *matCellDef="let m"> {{ m.bodega?.nombre }} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="tipo">
+        <mat-header-cell *matHeaderCellDef> Tipo </mat-header-cell>
+        <mat-cell *matCellDef="let m">
+          <span class="badge" [ngClass]="getTipoClass(m.tipo)">
+            {{ m.tipo }}
+          </span>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="cantidad">
+        <mat-header-cell *matHeaderCellDef> Cantidad </mat-header-cell>
+        <mat-cell *matCellDef="let m" [class.text-negativo]="m.tipo === 'SALIDA'"> 
+            {{ m.tipo === 'SALIDA' ? '-' : '+' }}{{ m.cantidad }} 
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="referencia">
+        <mat-header-cell *matHeaderCellDef> Referencia </mat-header-cell>
+        <mat-cell *matCellDef="let m"> 
+          <small>{{ m.referenciaTipo }} <br> {{ m.referenciaId }}</small> 
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+
+    <div *ngIf="loading" class="loading">Cargando movimientos...</div>
+    <div *ngIf="!loading && movimientos.length === 0" class="empty">No se encontraron movimientos.</div>
+
+    <mat-paginator
+      [length]="totalItems"
+      [pageIndex]="pageIndex"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 20, 50]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </div>
+</div>

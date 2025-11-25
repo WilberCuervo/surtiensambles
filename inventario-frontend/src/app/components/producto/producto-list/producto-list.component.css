@@ -1,135 +1,63 @@
-/* ─────────────────────────────── */
-/*   ESTILOS GENERALES DE LA PÁGINA */
-/* ─────────────────────────────── */
-
-.page {
-  padding: 20px;
-  width: 100%;
-  box-sizing: border-box;
+/* Limita el ancho de la celda de descripción y evita que la tabla crezca */
+.mat-column-descripcion {
+  max-width: 250px; /* Ancho máximo inicial */
+  position: relative;
 }
 
-.page h2 {
-  font-size: 26px;
-  margin-bottom: 16px;
-  font-weight: 600;
+.description-cell {
+  /* Estilo por defecto (truncado) */
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+  display: block;
 }
 
-/* Header con filtros + botones */
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
+/* Estilo cuando la descripción está expandida */
+.description-cell.expanded {
+  white-space: normal; /* Permite saltos de línea */
+  overflow: visible;
+  text-overflow: clip;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+/* Posiciona el botón de expansión al final de la celda */
+.expand-button {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px; /* Ajusta el tamaño del botón para que no ocupe mucho */
+  width: 24px;
+  line-height: 24px;
 }
 
-.search-field {
-  width: 260px;
+.expand-button mat-icon {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
 }
 
-/* ─────────────────────────────── */
-/*      BOTONES ESTILO BOOTSTRAP   */
-/* ─────────────────────────────── */
 
-/* Botón outline */
-.mat-mdc-outlined-button {
-  border: 1px solid #0d6efd !important;
-  color: #0d6efd !important;
-  font-weight: 500;
-}
-
-/* Botón primary */
-.mat-mdc-raised-button.mat-primary {
-  background-color: #0d6efd !important;
-  color: white !important;
-  font-weight: 500;
-}
-
-/* Íconos dentro de botones */
-button mat-icon {
-  font-size: 20px !important;
-}
-
-/* ─────────────────────────────── */
-/* TABLA TIPO CUADRÍCULA (CON ::NG-DEEP) */
-/* ─────────────────────────────── */
-
-::ng-deep .mat-mdc-table {
-  border: 1px solid #bcbcbc !important;
-  border-radius: 4px;
-  overflow: hidden;
-  width: 100%;
-}
-
-/* Encabezado */
-::ng-deep .mat-mdc-header-row {
-  background: #f8f9fa !important;
-  border-bottom: 2px solid #dcdcdc !important;
-}
-
-/* Celdas */
-::ng-deep .mat-mdc-header-cell,
-::ng-deep .mat-mdc-cell {
-  border-right: 1px solid #dcdcdc !important;
-  border-bottom: 1px solid #dcdcdc !important;
-  padding: 12px !important;
-  font-size: 14px;
-}
-
-/* Quitar borde derecha última columna */
-::ng-deep .mat-mdc-header-cell:last-child,
-::ng-deep .mat-mdc-cell:last-child {
-  border-right: none !important;
-}
-
-/* Hover tipo Bootstrap */
-::ng-deep .mat-mdc-row:hover {
-  background-color: #f2f2f2 !important;
-  cursor: pointer;
-}
-
-/* Filas alternas (zebra) */
-::ng-deep .mat-mdc-row:nth-child(even) {
-  background-color: #fafafa;
-}
-
-/* Columnas ordenables */
-.sortable {
-  cursor: pointer;
-  user-select: none;
-}
-
-.sortable:hover {
-  text-decoration: underline;
-  color: #0d6efd;
-}
-
-/* ─────────────────────────────── */
-/*          ESTADOS DE PÁGINA       */
-/* ─────────────────────────────── */
-
-.loading,
-.empty {
-  text-align: center;
-  padding: 20px;
-  color: #6c757d;
-  font-style: italic;
-}
-
+/* Estilos adicionales que teníamos antes */
 .active {
-  color: #2e7d32; /* verde */
+  color: green;
   font-weight: bold;
 }
 
 .inactive {
-  color: #c62828; /* rojo */
+  color: red;
   font-weight: bold;
+}
+
+.sortable {
+  cursor: pointer;
+}
+
+.bordered-table {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.empty, .loading {
+  text-align: center;
+  padding: 20px;
+  color: #555;
 }

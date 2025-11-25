@@ -1,47 +1,42 @@
-.page {
-  padding: 20px;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.search-field {
-  width: 300px;
-}
-
-.loading {
-  padding: 20px;
-  font-style: italic;
-  color: #666;
-}
-
-/* Tabla con bordes tipo Bootstrap */
-.bordered-table .mat-header-cell,
-.bordered-table .mat-cell {
-  border: 1px solid #dcdcdc !important;
-}
-
-.bordered-table .mat-header-row,
-.bordered-table .mat-row {
-  border-bottom: 1px solid #dcdcdc !important;
-}
-
-.sortable {
-  cursor: pointer;
-  user-select: none;
-  font-weight: bold;
-}
-
+/* Estilo para los estados (consistente con productos) */
 .active {
-  color: #2e7d32; /* verde */
+  color: green;
   font-weight: bold;
 }
 
 .inactive {
-  color: #c62828; /* rojo */
+  color: red;
   font-weight: bold;
+}
+
+/* Estilos de tabla y filtros */
+.sortable {
+  cursor: pointer;
+}
+
+.bordered-table {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.empty, .loading {
+  text-align: center;
+  padding: 20px;
+  color: #555;
+}
+
+/* Consistencia en el header de la página */
+.page-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Para mejor responsividad */
+}
+
+.search-field {
+  min-width: 250px;
+}
+
+.status-field {
+    min-width: 150px;
 }

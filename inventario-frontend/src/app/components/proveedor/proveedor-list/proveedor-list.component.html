@@ -11,7 +11,7 @@
     </mat-form-field>
 
     <!-- Filtrar estado -->
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="status-field">
         <mat-label>Estado</mat-label>
         <mat-select [formControl]="statusFilterControl"> 
           <mat-option [value]="null">Todos</mat-option>
@@ -79,6 +79,7 @@
   </mat-table>
 
   <div *ngIf="loading" class="loading">Cargando…</div>
+  <div *ngIf="!loading && proveedores.length === 0" class="empty">Sin resultados</div>
 
   <mat-paginator
     [length]="totalItems"

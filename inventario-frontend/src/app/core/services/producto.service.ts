@@ -4,6 +4,17 @@ import { Observable } from 'rxjs';
 import { Producto } from '../models/producto.model';
 import { APP_CONFIG } from '../../config/app.config';
 
+// Define una interfaz para los parámetros de búsqueda, similar a nuestro DTO de Java
+export interface ProductoSearchParams {
+  page?: number;
+  size?: number;
+  search?: string;
+  categoriaId?: number | null; 
+  activo?: boolean | null;
+  sortBy?: string;        
+  sortDirection?: string; 
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -13,46 +24,60 @@ export class ProductoService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Búsqueda avanzada con paginación, filtros y sort
+   * Búsqueda avanzada con paginación, filtros y sort usando un objeto de opciones.
    */
-  list(
-    page: number = 0,
-    size: number = 10,
-    search: string = '',
-    categoriaId: number | null = null,
-    activo: boolean | null = null,
-    sort: string = 'id,asc'
-  ): Observable<any> {
-    let params = new HttpParams()
-      .set('page', page)
-      .set('size', size)
-      .set('search', search)
-      .set('sort', sort);
+  list(params: ProductoSearchParams): Observable<any> {
+    let httpParams = new HttpParams();
 
-    if (search.trim().length > 0) {
-      params = params.set('search', search.trim());
+    // Asignar valores por defecto si no se proporcionan
+    httpParams = httpParams.set('page', params.page ?? 0);
+    httpParams = httpParams.set('size', params.size ?? 10);
+    httpParams = httpParams.set('search', params.search ?? '');
+    httpParams = httpParams.set('sortBy', params.sortBy ?? 'id');
+    httpParams = httpParams.set('sortDirection', params.sortDirection ?? 'asc');
+
+
+    if (params.search && params.search.trim().length > 0) {
+      httpParams = httpParams.set('search', params.search.trim());
+    }
+    
+    
+    if (params.categoriaId !== null && params.categoriaId !== undefined) {
+      httpParams = httpParams.set('categoriaId', params.categoriaId.toString());
     }
 
-    if (categoriaId !== null) {
-      params = params.set('categoria', categoriaId);
+    if (params.activo !== null && params.activo !== undefined) {
+      httpParams = httpParams.set('activo', params.activo.toString());
     }
 
-   if (activo !== null && activo !== undefined) {
-    params = params.set('activo', activo.toString());
+    
+    return this.http.get<any>(`${this.base}`, { params: httpParams });
+  }
+  
+  /**
+   * Nuevo método para obtener todos los productos sin paginar (para dropdowns)
+   * Llama al endpoint /api/productos/all
+   */
+  getAllSimpleList(activo?: boolean | null): Observable<Producto[]> {
+    let params = new HttpParams();
+    if (activo !== null && activo !== undefined) {
+      params = params.set('activo', activo.toString());
+    }
+    return this.http.get<Producto[]>(`${this.base}/all`, { params });
   }
 
-    return this.http.get<any>(`${this.base}`, { params });
-  }
 
   get(id: number): Observable<Producto> {
     return this.http.get<Producto>(`${this.base}/${id}`);
   }
 
   create(p: Producto): Observable<Producto> {
+    
     return this.http.post<Producto>(this.base, p);
   }
 
   update(id: number, p: Producto): Observable<Producto> {
+    
     return this.http.put<Producto>(`${this.base}/${id}`, p);
   }
 

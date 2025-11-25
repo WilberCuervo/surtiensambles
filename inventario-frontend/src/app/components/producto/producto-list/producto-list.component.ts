@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
@@ -7,11 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { ReactiveFormsModule, FormControl, FormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-import { ProductoService } from '../../../core/services/producto.service';
+import { ProductoService, ProductoSearchParams } from '../../../core/services/producto.service';
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { Producto } from '../../../core/models/producto.model';
 import { Categoria } from '../../../core/models/categoria.model';
@@ -27,7 +27,7 @@ import { Categoria } from '../../../core/models/categoria.model';
     MatInputModule,
     MatFormFieldModule,
     MatSelectModule,
-    MatPaginator,
+    MatPaginatorModule,
     ReactiveFormsModule,
     FormsModule,
     RouterModule
@@ -37,7 +37,9 @@ import { Categoria } from '../../../core/models/categoria.model';
 })
 export class ProductoListComponent implements OnInit {
 
-  // Campos visibles en tabla
+  // Añadimos 'expand' a las columnas mostradas si quieres un botón específico para la expansión
+  // displayedColumns: string[] = [..., 'descripcion', ..., 'acciones', 'expand']; 
+
   displayedColumns: string[] = [
     'sku',
     'nombre',
@@ -53,64 +55,65 @@ export class ProductoListComponent implements OnInit {
   productos: Producto[] = [];
   categorias: Categoria[] = [];
 
-  // Paginación y búsqueda
   totalItems = 0;
   pageIndex = 0;
   pageSize = 10;
-
   sortField = 'id';
   sortDir: 'asc' | 'desc' = 'asc';
-
-  private svc = inject(ProductoService);
-  private categoriaSvc = inject(CategoriaService);
-  private router = inject(Router);
+  
+  // Nuevo: Almacena el ID del producto cuya descripción está expandida. 
+  // Null si ninguna está expandida, o si queremos manejarlo por fila.
+  expandedDescriptionId: number | null = null; 
+  
 
   searchControl = new FormControl('');
-  selectedCategoria: number | null = null;
-  statusFilterControl = new FormControl(null);
+  categoriaFilterControl = new FormControl<number | null>(null);
+  estadoFilterControl = new FormControl<boolean | null>(null);
 
   loading = false;
 
+  private productoSvc = inject(ProductoService);
+  private categoriaSvc = inject(CategoriaService);
+  private router = inject(Router);
+
   ngOnInit(): void {
-    // Cargar categorías para filtros
     this.categoriaSvc.getAll().subscribe(c => this.categorias = c);
 
-    this.statusFilterControl.valueChanges
-      .pipe(distinctUntilChanged())
-      .subscribe(() => {
-        this.pageIndex = 0;
-        this.loadData();
-      });
-
-
+    // Filtros
+    this.estadoFilterControl.valueChanges.subscribe(() => this.resetPaginationAndLoad());
+    this.categoriaFilterControl.valueChanges.subscribe(() => this.resetPaginationAndLoad());
+    
+    // Búsqueda con debounce
     this.searchControl.valueChanges
       .pipe(debounceTime(400), distinctUntilChanged())
-      .subscribe(() => {
-        this.pageIndex = 0;
-        this.loadData();
-      });
+      .subscribe(() => this.resetPaginationAndLoad());
 
+    this.loadData();
+  }
+  
+  private resetPaginationAndLoad(): void {
+    this.pageIndex = 0;
     this.loadData();
   }
 
   loadData() {
     this.loading = true;
+    // Reiniciamos la descripción expandida al cargar nuevos datos
+    this.expandedDescriptionId = null; 
 
-    const search = this.searchControl.value || '';
-    // const categoria = this.selectedCategoria.value || null;
-    const estado = this.statusFilterControl.value;
-    const sort = `${this.sortField},${this.sortDir}`;
+    const params: ProductoSearchParams = {
+      page: this.pageIndex,
+      size: this.pageSize,
+      search: this.searchControl.value || '',
+      categoriaId: this.categoriaFilterControl.value,
+      activo: this.estadoFilterControl.value,
+      sortBy: this.sortField, 
+      sortDirection: this.sortDir
+    };
 
-    this.svc.list(
-      this.pageIndex,
-      this.pageSize,
-      search,
-      // categoria,
-      // sort,
-      estado
-    ).subscribe({
+    this.productoSvc.list(params).subscribe({
       next: res => {
-        this.categorias = res.content;
+        this.productos = res.content;
         this.totalItems = res.totalElements;
         this.loading = false;
       },
@@ -120,8 +123,6 @@ export class ProductoListComponent implements OnInit {
     });
   }
 
-
-  // Acciones
   new() {
     this.router.navigate(['/productos/nuevo']);
   }
@@ -134,18 +135,16 @@ export class ProductoListComponent implements OnInit {
     if (!id) return;
 
     if (confirm('¿Desea eliminar este producto?')) {
-      this.svc.delete(id).subscribe(() => this.loadData());
+      this.productoSvc.delete(id).subscribe(() => this.loadData());
     }
   }
-
-  // Paginación
+  
   onPageChange(event: any) {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     this.loadData();
   }
 
-  // Sort
   onSort(col: string) {
     if (this.sortField === col) {
       this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
@@ -155,12 +154,27 @@ export class ProductoListComponent implements OnInit {
     }
     this.loadData();
   }
+  
 
   clearFilters() {
     this.searchControl.setValue('');
-    this.selectedCategoria = null;
-    this.statusFilterControl.reset(null);
+    this.categoriaFilterControl.setValue(null);
+    this.estadoFilterControl.setValue(null);
     this.pageIndex = 0;
     this.loadData();
+  }
+  
+  // Nuevo método para alternar la expansión de la descripción
+  toggleDescription(productoId: number) {
+    if (this.expandedDescriptionId === productoId) {
+      this.expandedDescriptionId = null; // Contraer si ya estaba expandido
+    } else {
+      this.expandedDescriptionId = productoId; // Expandir este producto específico
+    }
+  }
+
+  // Helper para el HTML/CSS
+  isExpanded(productoId: number): boolean {
+    return this.expandedDescriptionId === productoId;
   }
 }

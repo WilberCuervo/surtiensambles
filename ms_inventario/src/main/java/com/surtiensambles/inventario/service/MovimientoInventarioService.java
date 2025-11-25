@@ -1,11 +1,13 @@
 package com.surtiensambles.inventario.service;
 
+import com.surtiensambles.inventario.dto.MovimientoRequestDto;
+import com.surtiensambles.inventario.dto.PageRequestDto;
 import com.surtiensambles.inventario.entity.MovimientoInventario;
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface MovimientoInventarioService {
 
-    MovimientoInventario registrarMovimiento(MovimientoInventario movimiento);
+    MovimientoInventario registrarMovimiento(MovimientoRequestDto requestDto);
 
-    List<MovimientoInventario> listarMovimientos();
+    Page<MovimientoInventario> listarPaginado(PageRequestDto requestDto);
 }

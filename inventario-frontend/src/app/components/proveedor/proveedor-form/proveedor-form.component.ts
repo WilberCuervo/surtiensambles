@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { debounceTime } from 'rxjs/operators';
 
 import { MatCardModule } from '@angular/material/card';
@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { ProveedorService } from '../../../core/services/proveedor.service';
 import { Proveedor } from '../../../core/models/proveedor.model';
@@ -24,7 +25,8 @@ import { Proveedor } from '../../../core/models/proveedor.model';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatButtonModule
+    MatButtonModule,
+    MatCheckboxModule
   ],
   templateUrl: './proveedor-form.component.html',
   styleUrls: ['./proveedor-form.component.css']
@@ -40,6 +42,7 @@ export class ProveedorFormComponent implements OnInit {
   private svc = inject(ProveedorService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
 
   ngOnInit(): void {
     this.initForm();
@@ -56,39 +59,44 @@ export class ProveedorFormComponent implements OnInit {
     this.form.get('nit')?.valueChanges
       .pipe(debounceTime(400))
       .subscribe(nit => {
-        if (!nit) return;
+        if (!nit || this.proveedorId) return; // No validar si estamos editando o el campo está vacío
         this.verificarNit(nit);
       });
   }
 
   initForm() {
-    this.form = new FormGroup({
-      nombre: new FormControl('', [Validators.required, Validators.minLength(2)]),
-      nit: new FormControl('', [Validators.required]),
-      telefono: new FormControl(''),
-      email: new FormControl('', [Validators.email]),
-      direccion: new FormControl(''),
-      estado: new FormControl(true, Validators.required)
+    this.form = this.fb.group({
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      nit: ['', [Validators.required]],
+      telefono: [''],
+      email: ['', [Validators.email]],
+      direccion: [''],
+      activo: [true, Validators.required] 
     });
   }
 
   verificarNit(nit: string) {
-    if (this.proveedorId) return; // No validar si estamos editando
-
     this.loadingNit = true;
-
     this.svc.existeNit(nit).subscribe(existe => {
       this.nitDisponible = !existe;
       this.loadingNit = false;
 
       if (existe) {
+
         this.form.get('nit')?.setErrors({ nitDuplicado: true });
+      } else {
+        if (this.form.get('nit')?.hasError('nitDuplicado')) {
+           this.form.get('nit')?.updateValueAndValidity();
+        }
       }
     });
   }
 
   submit() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+        this.form.markAllAsTouched();
+        return;
+    }
 
     this.saving = true;
     const data: Proveedor = this.form.value;
@@ -96,12 +104,12 @@ export class ProveedorFormComponent implements OnInit {
     if (this.proveedorId) {
       this.svc.update(this.proveedorId, data).subscribe({
         next: () => this.finalizar(),
-        error: () => this.saving = false
+        error: (err) => { console.error(err); this.saving = false; }
       });
     } else {
       this.svc.create(data).subscribe({
         next: () => this.finalizar(),
-        error: () => this.saving = false
+        error: (err) => { console.error(err); this.saving = false; }
       });
     }
   }

@@ -1,1 +1,65 @@
-<p>stock-list works!</p>
+<div class="page">
+  <h2>Stock por Bodega</h2>
+  
+  <div class="page-header">
+    <!-- Buscar -->
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar producto o bodega</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Ej. B001 o Producto A">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <button mat-stroked-button (click)="clearFilters()">Limpiar</button>
+  </div>
+
+  <!-- Tabla -->
+  <mat-table [dataSource]="stockRecords" class="mat-elevation-z2 bordered-table" *ngIf="!loading">
+
+    <ng-container matColumnDef="producto_sku">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('producto.sku')" class="sortable">SKU</mat-header-cell>
+      <mat-cell *matCellDef="let s">{{ s.producto?.sku }}</mat-cell>
+    </ng-container>
+    
+    <ng-container matColumnDef="producto_nombre">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('producto.nombre')" class="sortable">Producto</mat-header-cell>
+      <mat-cell *matCellDef="let s">{{ s.producto?.nombre }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="bodega_nombre">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('bodega.nombre')" class="sortable">Bodega</mat-header-cell>
+      <mat-cell *matCellDef="let s">{{ s.bodega?.nombre }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="cantidad_disponible">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('cantidadDisponible')" class="sortable">Disp.</mat-header-cell>
+      <mat-cell *matCellDef="let s">{{ s.cantidadDisponible }}</mat-cell>
+    </ng-container>
+    
+    <ng-container matColumnDef="cantidad_reservada">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('cantidadReservada')" class="sortable">Res.</mat-header-cell>
+      <mat-cell *matCellDef="let s">{{ s.cantidadReservada }}</mat-cell>
+    </ng-container>
+    
+    <ng-container matColumnDef="ultima_actualizacion">
+      <mat-header-cell *matHeaderCellDef (click)="onSort('ultimaActualizacion')" class="sortable">Últ. Actualización</mat-header-cell>
+      <mat-cell *matCellDef="let s">{{ s.ultimaActualizacion | date:'short' }}</mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+  </mat-table>
+
+  <div *ngIf="loading" class="loading">Cargando…</div>
+  <div *ngIf="!loading && stockRecords.length === 0" class="empty">Sin resultados</div>
+
+  <!-- Paginación -->
+  <mat-paginator
+    [length]="totalItems"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+
+</div>

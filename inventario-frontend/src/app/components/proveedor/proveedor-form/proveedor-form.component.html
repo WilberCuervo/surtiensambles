@@ -4,6 +4,7 @@
     <mat-card-title>{{ proveedorId ? 'Editar proveedor' : 'Nuevo proveedor' }}</mat-card-title>
 
     <mat-card-content>
+      <!-- Conectamos con el 'form' de nuestro TS -->
       <form [formGroup]="form" (ngSubmit)="submit()" class="grid">
 
         <!-- Nombre -->
@@ -21,6 +22,10 @@
           <input matInput formControlName="nit">
 
           <mat-icon *ngIf="loadingNit" matSuffix>hourglass_top</mat-icon>
+          <!-- Usa 'check_circle' o 'error' para feedback visual -->
+          <mat-icon *ngIf="!loadingNit && form.get('nit')?.valid && nitDisponible" matSuffix color="primary">check_circle</mat-icon>
+          <mat-icon *ngIf="!loadingNit && form.get('nit')?.hasError('nitDuplicado')" matSuffix color="warn">error</mat-icon>
+
 
           <mat-error *ngIf="form.get('nit')?.hasError('required')">
             El NIT es obligatorio
@@ -52,20 +57,17 @@
           <textarea matInput formControlName="direccion" rows="2"></textarea>
         </mat-form-field>
 
-        <!-- Estado -->
-        <mat-form-field appearance="outline">
-          <mat-label>Estado</mat-label>
-          <mat-select formControlName="estado">
-            <mat-option [value]="true">Activo</mat-option>
-            <mat-option [value]="false">Inactivo</mat-option>
-          </mat-select>
-        </mat-form-field>
+        <!-- Estado (Cambiamos el Select por un Checkbox para consistencia con Producto y Categoría) -->
+        <mat-checkbox formControlName="activo" color="primary" class="checkbox-activo">
+            Activo
+        </mat-checkbox>
 
       </form>
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <button mat-raised-button color="primary" [disabled]="saving" (click)="submit()">Guardar</button>
+      <!-- Deshabilitamos si el formulario es inválido o estamos guardando -->
+      <button mat-raised-button color="primary" [disabled]="saving || form.invalid" (click)="submit()">Guardar</button>
       <button mat-button (click)="cancelar()">Cancelar</button>
     </mat-card-actions>
 

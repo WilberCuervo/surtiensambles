@@ -4,12 +4,13 @@ import { Observable } from 'rxjs';
 import { APP_CONFIG } from '../../config/app.config';
 import { Proveedor } from '../models/proveedor.model';
 
-export interface ProveedorPage {
-  content: Proveedor[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
+export interface ProveedorSearchParams {
+  page?: number;
+  size?: number;
+  search?: string;
+  activo?: boolean | null;
+  sortBy?: string;
+  sortDirection?: string;
 }
 
 @Injectable({
@@ -21,24 +22,33 @@ export class ProveedorService {
 
   constructor(private http: HttpClient) { }
 
-  list(
-    page: number,
-    size: number,
-    search: string = '',
-    sort: string = 'id,asc',
-    activo?: boolean | null
-  ): Observable<ProveedorPage> {
+  /**
+   * Búsqueda avanzada con paginación, filtros y sort usando un objeto de opciones.
+   * Llama al endpoint GET /api/proveedores
+   */
+  list(params: ProveedorSearchParams): Observable<any> {
+    let httpParams = new HttpParams();
 
-    let params = new HttpParams()
-      .set('page', page)
-      .set('size', size)
-      .set('search', search)
-      .set('sort', sort);
+    // Asignar valores por defecto si no se proporcionan
+    httpParams = httpParams.set('page', params.page ?? 0);
+    httpParams = httpParams.set('size', params.size ?? 10);
+    httpParams = httpParams.set('search', params.search ?? '');
+    httpParams = httpParams.set('sortBy', params.sortBy ?? 'id');
+    httpParams = httpParams.set('sortDirection', params.sortDirection ?? 'asc');
 
+    if (params.activo !== null && params.activo !== undefined) {
+      httpParams = httpParams.set('activo', params.activo.toString());
+    }
+
+    return this.http.get<any>(this.base, { params: httpParams });
+  }
+  
+  getAllSimpleList(activo?: boolean | null): Observable<Proveedor[]> {
+    let params = new HttpParams();
     if (activo !== null && activo !== undefined) {
       params = params.set('activo', activo.toString());
     }
-    return this.http.get<ProveedorPage>(this.base, { params });
+    return this.http.get<Proveedor[]>(`${this.base}/all`, { params });
   }
 
   get(id: number): Observable<Proveedor> {
