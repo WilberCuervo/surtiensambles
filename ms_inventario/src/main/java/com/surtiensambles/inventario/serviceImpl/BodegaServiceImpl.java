@@ -2,6 +2,8 @@ package com.surtiensambles.inventario.serviceImpl;
 
 import com.surtiensambles.inventario.dto.PageRequestDto;
 import com.surtiensambles.inventario.entity.Bodega;
+import com.surtiensambles.inventario.exception.BusinessException;
+import com.surtiensambles.inventario.exception.ResourceNotFoundException;
 import com.surtiensambles.inventario.repository.BodegaRepository;
 import com.surtiensambles.inventario.service.BodegaService;
 
@@ -82,13 +84,16 @@ public class BodegaServiceImpl implements BodegaService {
 
 	@Override
 	public Bodega obtener(Long id) {
-		return repo.findById(id).orElseThrow(() -> new RuntimeException("Bodega no encontrada"));
+        
+		return repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada con ID: " + id));
 	}
 
 	@Override
 	public Bodega crear(Bodega bodega) {
+        
 		if (repo.existsByCodigo(bodega.getCodigo())) {
-			throw new RuntimeException("El código de bodega ya está registrado");
+			throw new BusinessException("El código de bodega '" + bodega.getCodigo() + "' ya está registrado");
 		}
 
 		return repo.save(bodega);
@@ -97,11 +102,12 @@ public class BodegaServiceImpl implements BodegaService {
 	@Override
 	public Bodega actualizar(Long id, Bodega bodega) {
 
-		Bodega existente = obtener(id);
+		Bodega existente = obtener(id); 
 
 		if (!existente.getCodigo().equalsIgnoreCase(bodega.getCodigo())
 				&& repo.existsByCodigo(bodega.getCodigo())) {
-			throw new RuntimeException("Ya existe otra bodega con este código");
+            
+			throw new BusinessException("Ya existe otra bodega con el código: " + bodega.getCodigo());
 		}
 
 		existente.setNombre(bodega.getNombre());
@@ -116,6 +122,7 @@ public class BodegaServiceImpl implements BodegaService {
 	@Override
 	public void eliminar(Long id) {
         Bodega bodega = obtener(id);
+        
 		repo.delete(bodega);
 	}
 

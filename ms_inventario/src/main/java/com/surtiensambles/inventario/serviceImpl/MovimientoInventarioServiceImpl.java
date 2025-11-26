@@ -3,6 +3,7 @@ package com.surtiensambles.inventario.serviceImpl;
 import com.surtiensambles.inventario.dto.MovimientoRequestDto;
 import com.surtiensambles.inventario.dto.PageRequestDto;
 import com.surtiensambles.inventario.entity.*;
+import com.surtiensambles.inventario.exception.ResourceNotFoundException;
 import com.surtiensambles.inventario.repository.*;
 import com.surtiensambles.inventario.service.MovimientoInventarioService;
 import com.surtiensambles.inventario.service.StockService;
@@ -24,7 +25,7 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
     private final ProductoRepository productoRepository;
     private final BodegaRepository bodegaRepository;
     
-    // Inyectamos el servicio de stock que acabamos de modificar
+    // Inyectamos el servicio de stock
     private final StockService stockService;
 
     @Override
@@ -41,14 +42,15 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
     }
 
     private MovimientoInventario procesarMovimientoSimple(MovimientoRequestDto dto) {
-        // 1. Validaciones básicas
+        // 1. Validaciones básicas con ResourceNotFoundException (404)
         Producto producto = productoRepository.findById(dto.getProductoId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + dto.getProductoId()));
         
         Bodega bodega = bodegaRepository.findById(dto.getBodegaId())
-                .orElseThrow(() -> new RuntimeException("Bodega no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada con ID: " + dto.getBodegaId()));
 
         // 2. Actualizar Stock (Delegamos la responsabilidad al StockService)
+        // Nota: Si StockService falla (ej: saldo insuficiente), lanzará BusinessException que también capturamos.
         stockService.actualizarStock(producto.getId(), bodega.getId(), dto.getTipo(), dto.getCantidad());
 
         // 3. Guardar el registro del movimiento
@@ -116,7 +118,7 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
                 String term = "%" + requestDto.getSearch().toLowerCase() + "%";
                 Predicate prodName = cb.like(cb.lower(root.get("producto").get("nombre")), term);
                 Predicate bodegaName = cb.like(cb.lower(root.get("bodega").get("nombre")), term);
-                Predicate tipo = cb.like(cb.lower(root.get("tipo")), term);	
+                Predicate tipo = cb.like(cb.lower(root.get("tipo")), term); 
                 
                 combinedPredicate = cb.and(combinedPredicate, cb.or(prodName, bodegaName, tipo));
             }

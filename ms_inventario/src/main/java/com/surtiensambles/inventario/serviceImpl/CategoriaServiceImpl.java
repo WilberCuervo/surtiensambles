@@ -2,6 +2,8 @@ package com.surtiensambles.inventario.serviceImpl;
 
 import com.surtiensambles.inventario.dto.PageRequestDto;
 import com.surtiensambles.inventario.entity.Categoria;
+import com.surtiensambles.inventario.exception.BusinessException;
+import com.surtiensambles.inventario.exception.ResourceNotFoundException; 
 import com.surtiensambles.inventario.repository.CategoriaRepository;
 import com.surtiensambles.inventario.service.CategoriaService;
 
@@ -76,18 +78,20 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
 
-    // Métodos CRUD básicos (sin cambios significativos)
+    // Métodos CRUD básicos con Excepciones Personalizadas
 
     @Override
     public Categoria obtener(Long id) {
+      
         return repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
     }
 
     @Override
     public Categoria crear(Categoria categoria) {
+       
         if (repo.existsByNombreIgnoreCase(categoria.getNombre())) {
-            throw new RuntimeException("La categoría ya existe");
+            throw new BusinessException("La categoría '" + categoria.getNombre() + "' ya existe");
         }
         categoria.setActivo(true);
         return repo.save(categoria);
@@ -95,11 +99,12 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public Categoria actualizar(Long id, Categoria categoria) {
-        Categoria existente = obtener(id);
+        Categoria existente = obtener(id); 
 
         if (!existente.getNombre().equalsIgnoreCase(categoria.getNombre())
                 && repo.existsByNombreIgnoreCase(categoria.getNombre())) {
-            throw new RuntimeException("Ya existe otra categoría con ese nombre");
+           
+            throw new BusinessException("Ya existe otra categoría con el nombre: " + categoria.getNombre());
         }
 
         existente.setNombre(categoria.getNombre());
@@ -122,7 +127,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public List<Categoria> listarActivas() {
-         // Este método ahora puede usar el nuevo helper para consistencia
+        
          return listarPorEstado(Optional.of(true));
     }
 }

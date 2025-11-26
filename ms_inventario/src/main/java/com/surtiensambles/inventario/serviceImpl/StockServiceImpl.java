@@ -4,6 +4,8 @@ import com.surtiensambles.inventario.dto.PageRequestDto;
 import com.surtiensambles.inventario.entity.Bodega;
 import com.surtiensambles.inventario.entity.Producto;
 import com.surtiensambles.inventario.entity.Stock;
+import com.surtiensambles.inventario.exception.BusinessException;   
+import com.surtiensambles.inventario.exception.ResourceNotFoundException;
 import com.surtiensambles.inventario.repository.BodegaRepository;
 import com.surtiensambles.inventario.repository.ProductoRepository; 
 import com.surtiensambles.inventario.repository.StockRepository;
@@ -26,8 +28,6 @@ import jakarta.persistence.criteria.Predicate;
 public class StockServiceImpl implements StockService {
 
     private final StockRepository stockRepository;
-    
-    //crear stock si no existe
     private final ProductoRepository productoRepository;
     private final BodegaRepository bodegaRepository;
 
@@ -66,14 +66,8 @@ public class StockServiceImpl implements StockService {
         return stockRepository.findById(id);
     }
 
+    // MÉTODOS PARA INTEGRACIÓN CON MOVIMIENTOS
 
-    //MÉTODOS PARA INTEGRACIÓN CON MOVIMIENTOS
-
-
-    /**
-     * Este método es llamado por MovimientoService para actualizar el inventario.
-     * Maneja la lógica de suma/resta y validación de negativos.
-     */
     @Override
     @Transactional
     public void actualizarStock(Long productoId, Long bodegaId, String tipoMovimiento, Integer cantidad) {
@@ -98,7 +92,7 @@ public class StockServiceImpl implements StockService {
                 break;
                 
             default:
-                // Si es TRANSFERENCIA, MovimientoService enviará una SALIDA origen y una ENTRADA destino
+
                 throw new IllegalArgumentException("Acción de stock no soportada: " + tipoMovimiento);
         }
 
@@ -108,9 +102,10 @@ public class StockServiceImpl implements StockService {
 
     private Stock crearStockVacio(Long productoId, Long bodegaId) {
         Producto producto = productoRepository.findById(productoId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado (ID: " + productoId + ")"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado (ID: " + productoId + ")"));
+        
         Bodega bodega = bodegaRepository.findById(bodegaId)
-                .orElseThrow(() -> new RuntimeException("Bodega no encontrada (ID: " + bodegaId + ")"));
+                .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada (ID: " + bodegaId + ")"));
 
         return Stock.builder()
                 .producto(producto)
@@ -123,8 +118,9 @@ public class StockServiceImpl implements StockService {
 
     private void validarStockSuficiente(Stock stock, Integer cantidadRequerida) {
         if (stock.getCantidadDisponible() < cantidadRequerida) {
-            throw new RuntimeException("Stock insuficiente. Disponible: " 
-                    + stock.getCantidadDisponible() + ", Requerido: " + cantidadRequerida);
+         
+            throw new BusinessException("Stock insuficiente en '" + stock.getBodega().getNombre() + 
+                    "'. Disponible: " + stock.getCantidadDisponible() + ", Requerido: " + cantidadRequerida);
         }
     }
     
@@ -132,10 +128,11 @@ public class StockServiceImpl implements StockService {
     @Transactional
     public void reservarStock(Long productoId, Long bodegaId, Integer cantidad) {
         Stock stock = stockRepository.findByProductoIdAndBodegaId(productoId, bodegaId)
-                .orElseThrow(() -> new RuntimeException("No existe registro de stock para reservar"));
+                .orElseThrow(() -> new ResourceNotFoundException("No existe registro de stock para este producto en la bodega seleccionada"));
 
         if (stock.getCantidadDisponible() < cantidad) {
-            throw new RuntimeException("Stock insuficiente para reservar. Disponible: " + stock.getCantidadDisponible());
+           
+            throw new BusinessException("Stock insuficiente para reservar. Disponible: " + stock.getCantidadDisponible());
         }
 
         // Mueve de Disponible -> Reservado
@@ -150,7 +147,7 @@ public class StockServiceImpl implements StockService {
     @Transactional
     public void liberarReserva(Long productoId, Long bodegaId, Integer cantidad) {
         Stock stock = stockRepository.findByProductoIdAndBodegaId(productoId, bodegaId)
-                .orElseThrow(() -> new RuntimeException("Stock no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Stock no encontrado para liberar reserva"));
 
         // Mueve de Reservado -> Disponible (El cliente canceló)
         stock.setCantidadReservada(stock.getCantidadReservada() - cantidad);
@@ -164,11 +161,12 @@ public class StockServiceImpl implements StockService {
     @Transactional
     public void descontarDeReserva(Long productoId, Long bodegaId, Integer cantidad) {
         Stock stock = stockRepository.findByProductoIdAndBodegaId(productoId, bodegaId)
-                .orElseThrow(() -> new RuntimeException("Stock no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Stock no encontrado para confirmar reserva"));
 
         // Saca de Reservado -> Afuera (Se concretó la venta)
         if (stock.getCantidadReservada() < cantidad) {
-             throw new RuntimeException("Inconsistencia: No hay suficiente stock reservado para descontar.");
+             // CAMBIO: BusinessException (400)
+             throw new BusinessException("Inconsistencia crítica: No hay suficiente stock reservado para descontar.");
         }
         
         stock.setCantidadReservada(stock.getCantidadReservada() - cantidad);

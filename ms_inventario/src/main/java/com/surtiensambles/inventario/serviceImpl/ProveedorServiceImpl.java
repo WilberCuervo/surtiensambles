@@ -2,6 +2,8 @@ package com.surtiensambles.inventario.serviceImpl;
 
 import com.surtiensambles.inventario.dto.PageRequestDto;
 import com.surtiensambles.inventario.entity.Proveedor;
+import com.surtiensambles.inventario.exception.BusinessException;      
+import com.surtiensambles.inventario.exception.ResourceNotFoundException; 
 import com.surtiensambles.inventario.repository.ProveedorRepository;
 import com.surtiensambles.inventario.service.ProveedorService;
 
@@ -20,24 +22,24 @@ import jakarta.persistence.criteria.Predicate;
 @RequiredArgsConstructor
 public class ProveedorServiceImpl implements ProveedorService {
 
-	private final ProveedorRepository repo;
+    private final ProveedorRepository repo;
 
     /**
      * Implementación centralizada de listado paginado y filtrado para Proveedores.
      */
-	@Override
-	public Page<Proveedor> listarPaginado(PageRequestDto requestDto) {
+    @Override
+    public Page<Proveedor> listarPaginado(PageRequestDto requestDto) {
 
-		// 1. Convertir DTO a objetos Pageable y Sort de Spring
-		Sort order = Sort.by(requestDto.getSortDirection(), requestDto.getSortBy());
-		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize(), order);
+        // 1. Convertir DTO a objetos Pageable y Sort de Spring
+        Sort order = Sort.by(requestDto.getSortDirection(), requestDto.getSortBy());
+        Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize(), order);
 
-		// 2. Construir la Specification dinámica
-		Specification<Proveedor> spec = buildSpecification(requestDto);
+        // 2. Construir la Specification dinámica
+        Specification<Proveedor> spec = buildSpecification(requestDto);
 
-		// 3. Ejecutar la consulta
-		return repo.findAll(spec, pageable);
-	}
+        // 3. Ejecutar la consulta
+        return repo.findAll(spec, pageable);
+    }
 
     /**
      * Método helper privado para construir la Specification dinámica de Proveedor.
@@ -80,48 +82,56 @@ public class ProveedorServiceImpl implements ProveedorService {
     }
 
 
-	@Override
-	public Proveedor obtener(Long id) {
-		return repo.findById(id).orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
-	}
+    @Override
+    public Proveedor obtener(Long id) {
+       
+        return repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Proveedor no encontrado con ID: " + id));
+    }
 
-	@Override
-	public Proveedor crear(Proveedor proveedor) {
+    @Override
+    public Proveedor crear(Proveedor proveedor) {
+       
+        if (repo.existsByNitIgnoreCase(proveedor.getNit())) {
+            throw new BusinessException("El NIT " + proveedor.getNit() + " ya está registrado en el sistema");
+        }
+        
+        return repo.save(proveedor);
+    }
 
-		if (repo.existsByNitIgnoreCase(proveedor.getNit())) {
-			throw new RuntimeException("El NIT ya está registrado");
-		}
-		
-		return repo.save(proveedor);
-	}
+    @Override
+    public Proveedor actualizar(Long id, Proveedor proveedor) {
 
-	@Override
-	public Proveedor actualizar(Long id, Proveedor proveedor) {
+        Proveedor existente = obtener(id); 
 
-		Proveedor existente = obtener(id); // Usamos el método 'obtener' local
+        if (!existente.getNit().equalsIgnoreCase(proveedor.getNit())
+                && repo.existsByNitIgnoreCase(proveedor.getNit())) {
+            
+            throw new BusinessException("Ya existe otro proveedor con el NIT: " + proveedor.getNit());
+        }
 
-		if (!existente.getNit().equalsIgnoreCase(proveedor.getNit())
-				&& repo.existsByNitIgnoreCase(proveedor.getNit())) {
-			throw new RuntimeException("Ya existe otro proveedor con este NIT");
-		}
+        existente.setNombre(proveedor.getNombre());
+        existente.setNit(proveedor.getNit());
+        existente.setTelefono(proveedor.getTelefono());
+        existente.setEmail(proveedor.getEmail());
+        existente.setDireccion(proveedor.getDireccion());
+        existente.setActivo(proveedor.getActivo());
 
-		existente.setNombre(proveedor.getNombre());
-		existente.setNit(proveedor.getNit());
-		existente.setTelefono(proveedor.getTelefono());
-		existente.setEmail(proveedor.getEmail());
-		existente.setDireccion(proveedor.getDireccion());
-		existente.setActivo(proveedor.getActivo());
+        return repo.save(existente);
+    }
 
-		return repo.save(existente);
-	}
+    @Override
+    public void eliminar(Long id) {
+        // Obtenemos primero para validar existencia (lanza 404 si no existe)
+        Proveedor proveedor = obtener(id);
+        
+        // Nota: Si el proveedor tiene productos asociados (llave foránea),
+        // saltará la DataIntegrityViolationException del GlobalExceptionHandler (409 Conflict)
+        repo.delete(proveedor);
+    }
 
-	@Override
-	public void eliminar(Long id) {
-		repo.delete(obtener(id));
-	}
-
-	@Override
-	public boolean existeNit(String nit) {
-		return repo.existsByNitIgnoreCase(nit);
-	}
+    @Override
+    public boolean existeNit(String nit) {
+        return repo.existsByNitIgnoreCase(nit);
+    }
 }
