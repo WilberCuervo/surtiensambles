@@ -28,7 +28,7 @@ import com.surtiensambes.commos.security.model.AuthLoginRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("auth/v1")
+@RequestMapping("/auth/v1")
 @PreAuthorize("permitAll()")
 public class AuthController {
 	@Autowired
@@ -43,7 +43,10 @@ public class AuthController {
 	public UserEntity obtenerUsuario(@PathVariable String userName) {		
 		return userServiceImpl.getUserEntiry(userName);
 	}
+	
+	
 	@PostMapping("/user/log-in")
+	@PreAuthorize("permitAll()")
 	public ResponseEntity<AuhtResponse> login(@RequestBody @Valid AuthLoginRequest userRequest){
 		
 		return new ResponseEntity<>(this.userDetailsImple.loginUser(userRequest),HttpStatus.OK);
