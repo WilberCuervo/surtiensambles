@@ -50,12 +50,14 @@ public class SecurityConfig { //<S extends Session>
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity
+				.cors(Customizer.withDefaults())
 				.httpBasic(Customizer.withDefaults())
 				.csrf(crf -> crf.disable())
 				.sessionManagement(sesion-> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))	//sin estado de sesion para eso se cumple el token
 				.addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
 				.build();
 	}
+		
 	
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
