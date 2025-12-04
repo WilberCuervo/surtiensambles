@@ -1,0 +1,63 @@
+/* Limita el ancho de la celda de descripción y evita que la tabla crezca */
+.mat-column-descripcion {
+  max-width: 250px; /* Ancho máximo inicial */
+  position: relative;
+}
+
+.description-cell {
+  /* Estilo por defecto (truncado) */
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Estilo cuando la descripción está expandida */
+.description-cell.expanded {
+  white-space: normal; /* Permite saltos de línea */
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Posiciona el botón de expansión al final de la celda */
+.expand-button {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px; /* Ajusta el tamaño del botón para que no ocupe mucho */
+  width: 24px;
+  line-height: 24px;
+}
+
+.expand-button mat-icon {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+}
+
+
+/* Estilos adicionales que teníamos antes */
+.active {
+  color: green;
+  font-weight: bold;
+}
+
+.inactive {
+  color: red;
+  font-weight: bold;
+}
+
+.sortable {
+  cursor: pointer;
+}
+
+.bordered-table {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.empty, .loading {
+  text-align: center;
+  padding: 20px;
+  color: #555;
+}

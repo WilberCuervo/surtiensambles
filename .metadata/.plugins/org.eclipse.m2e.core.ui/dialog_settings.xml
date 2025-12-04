@@ -2,6 +2,9 @@
 <section name="Workbench">
 	<section name="MavenProjectImportWizardPage">
 		<list key="rootDirectory">
+			<item value="D:\Documentos\Desktop\surtiensambles\ms-common"/>
+			<item value="D:\Documentos\Desktop\surtiensambles\ms-cliente"/>
+			<item value="D:\Documentos\Desktop\surtiensambles\ms_inventario"/>
 			<item value="D:\microservices\surtiensambles\ms-usuario"/>
 			<item value="D:\microservices\surtiensambles\ms-security-em"/>
 			<item value="D:\microservices\surtiensambles\ms-security"/>

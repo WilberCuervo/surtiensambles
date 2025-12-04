@@ -1,0 +1,74 @@
+@use '@angular/material' as mat;
+
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+  margin: 0;
+}
+
+/* --- TUS ESTILOS DE TABLA (Déjalos tal cual) --- */
+html .mat-mdc-table {
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+html .mat-mdc-header-row {
+  background-color: #f8f9fa !important;
+  border-bottom: 2px solid #dcdcdc !important;
+}
+
+html .mat-mdc-header-cell,
+html .mat-mdc-cell {
+  border-right: 1px solid #dcdcdc !important;
+  border-bottom: 1px solid #dcdcdc !important;
+  padding: 12px !important;
+  font-size: 14px;
+}
+
+html .mat-mdc-header-cell:last-child,
+html .mat-mdc-cell:last-child {
+  border-right: none !important;
+}
+
+html .mat-mdc-row:hover {
+  background-color: #f2f2f2 !important;
+  cursor: pointer;
+}
+
+html .mat-mdc-row:nth-child(even) {
+  background-color: #fafafa !important;
+}
+
+html .mat-mdc-raised-button.mat-primary {
+  background-color: #0d6efd !important;
+  color: white !important;
+  font-weight: 500;
+}
+
+html .mat-mdc-outlined-button {
+  border: 1px solid #0d6efd !important;
+  color: #0d6efd !important;
+  font-weight: 500;
+}
+
+/* 2. REGLA DE SEGURIDAD PARA LOS ICONOS (Agrégalo al final) */
+/* Esto obliga al navegador a usar la fuente correcta aunque Roboto sea la default */
+.material-icons, mat-icon {
+  font-family: 'Material Icons' !important;
+}

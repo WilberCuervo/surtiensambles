@@ -1,0 +1,42 @@
+/* Estilo para los estados (consistente con productos) */
+.active {
+  color: green;
+  font-weight: bold;
+}
+
+.inactive {
+  color: red;
+  font-weight: bold;
+}
+
+/* Estilos de tabla y filtros */
+.sortable {
+  cursor: pointer;
+}
+
+.bordered-table {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.empty, .loading {
+  text-align: center;
+  padding: 20px;
+  color: #555;
+}
+
+/* Consistencia en el header de la página */
+.page-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Para mejor responsividad */
+}
+
+.search-field {
+  min-width: 250px;
+}
+
+.status-field {
+    min-width: 150px;
+}

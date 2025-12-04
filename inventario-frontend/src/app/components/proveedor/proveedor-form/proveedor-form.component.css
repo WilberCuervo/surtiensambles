@@ -1,0 +1,29 @@
+.form-wrapper {
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+}
+
+.card {
+    /* Elimina 'display: flex' si causa problemas con el layout 'grid' */
+}
+
+/* Usamos grid para un layout responsive, si quieres que se vea como en 2 columnas */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.full {
+  grid-column: 1 / -1; /* Ocupa ambas columnas */
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.checkbox-activo {
+  margin-top: 15px;
+  grid-column: 1 / -1; /* Ocupa ambas columnas */
+}

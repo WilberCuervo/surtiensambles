@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-    <fullyQualifiedTypeName name="org.modelmapper.ModelMapper"/>
-    <fullyQualifiedTypeName name="com.surtiensambles.producto.entity.Producto"/>
-    <fullyQualifiedTypeName name="lombok.Builder"/>
-    <fullyQualifiedTypeName name="java.util.List"/>
-    <fullyQualifiedTypeName name="java.lang.System"/>
+    <fullyQualifiedTypeName name="lombok.Data"/>
+    <fullyQualifiedTypeName name="lombok.AllArgsConstructor"/>
+    <fullyQualifiedTypeName name="lombok.NoArgsConstructor"/>
+    <fullyQualifiedTypeName name="com.surtiensambles.inventario.repository.StockRepository"/>
+    <fullyQualifiedTypeName name="com.surtiensambles.inventario.repository.MovimientoInventarioRepository"/>
 </qualifiedTypeNameHistroy>

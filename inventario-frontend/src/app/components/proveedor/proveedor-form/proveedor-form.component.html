@@ -1,0 +1,76 @@
+<div class="form-wrapper">
+
+  <mat-card class="card">
+    <mat-card-title>{{ proveedorId ? 'Editar proveedor' : 'Nuevo proveedor' }}</mat-card-title>
+
+    <mat-card-content>
+      <!-- Conectamos con el 'form' de nuestro TS -->
+      <form [formGroup]="form" (ngSubmit)="submit()" class="grid">
+
+        <!-- Nombre -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Nombre del proveedor</mat-label>
+          <input matInput formControlName="nombre">
+          <mat-error *ngIf="form.get('nombre')?.hasError('required')">
+            El nombre es obligatorio
+          </mat-error>
+        </mat-form-field>
+
+        <!-- NIT -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>NIT</mat-label>
+          <input matInput formControlName="nit">
+
+          <mat-icon *ngIf="loadingNit" matSuffix>hourglass_top</mat-icon>
+          <!-- Usa 'check_circle' o 'error' para feedback visual -->
+          <mat-icon *ngIf="!loadingNit && form.get('nit')?.valid && nitDisponible" matSuffix color="primary">check_circle</mat-icon>
+          <mat-icon *ngIf="!loadingNit && form.get('nit')?.hasError('nitDuplicado')" matSuffix color="warn">error</mat-icon>
+
+
+          <mat-error *ngIf="form.get('nit')?.hasError('required')">
+            El NIT es obligatorio
+          </mat-error>
+
+          <mat-error *ngIf="form.get('nit')?.hasError('nitDuplicado')">
+            Ya existe un proveedor con este NIT
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Teléfono -->
+        <mat-form-field appearance="outline">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="telefono">
+        </mat-form-field>
+
+        <!-- Email -->
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email">
+          <mat-error *ngIf="form.get('email')?.hasError('email')">
+            Formato de email no válido
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Dirección -->
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Dirección</mat-label>
+          <textarea matInput formControlName="direccion" rows="2"></textarea>
+        </mat-form-field>
+
+        <!-- Estado (Cambiamos el Select por un Checkbox para consistencia con Producto y Categoría) -->
+        <mat-checkbox formControlName="activo" color="primary" class="checkbox-activo">
+            Activo
+        </mat-checkbox>
+
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <!-- Deshabilitamos si el formulario es inválido o estamos guardando -->
+      <button mat-raised-button color="primary" [disabled]="saving || form.invalid" (click)="submit()">Guardar</button>
+      <button mat-button (click)="cancelar()">Cancelar</button>
+    </mat-card-actions>
+
+  </mat-card>
+
+</div>
