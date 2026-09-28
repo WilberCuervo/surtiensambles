@@ -1,0 +1,32 @@
+services:
+  
+  postgres:
+    image: postgres:17
+    container_name: postgres_auth
+    restart: always
+    environment: 
+      POSTGRES_DB: authdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ms-auth:
+    image: ms-auth:1.0
+    container_name: ms-auth-container
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8081"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: authdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+volumes:
+  postgres_data:

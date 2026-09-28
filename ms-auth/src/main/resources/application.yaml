@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: ms-auth
+
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:authdb}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:authdb}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    locations: classpath:db/migration
+
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG
+    io.r2dbc.postgresql: INFO
+
+server:
+  port: 8081
+
+jwt:
+  secret: MiClaveSuperSecretaParaJwtQueDebeTenerMasDe32Caracteres
+  expiration: 86400000

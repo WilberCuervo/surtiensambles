@@ -1,1 +1,20 @@
 /.metadata/
+# IBM MQ runtime data
+laboratorio-ibm-mq/mqdata/
+
+# IBM MQ logs
+*.LOG
+*.log
+
+# Runtime / temporary files
+*.tmp
+*.pid
+
+# OS
+Thumbs.db
+.DS_Store
+
+mqdata/data/sockets/
+mqdata/data/qmgrs/QMI/
+mqdata/data/errors/
+mqdata/data/...

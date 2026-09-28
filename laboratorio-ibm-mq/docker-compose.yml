@@ -1,0 +1,19 @@
+services:
+  
+  ibm-mq:
+    image: icr.io/ibm-messaging/mq:latest
+    container_name: ibm-mq
+    ports:
+      - "1414:1414"
+      - "9443:9443"
+      
+    environment:
+      LICENSE: accept
+      MQ_QMGR_NAME: QMI
+      
+      MQ_APP_PASSWORD: admin
+      MQ_ADMIN_PASSWORD: admin
+
+    volumes:
+      - ./mqdata:/mnt/mqm
+    
